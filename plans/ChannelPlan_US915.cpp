@@ -20,8 +20,7 @@
 
 using namespace lora;
 
-const uint8_t ChannelPlan_US915::US915_TX_POWERS[] = { 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10 };
-const uint8_t ChannelPlan_US915::US915_RADIO_POWERS[] = { 3, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 18, 19, 19 };
+const uint8_t ChannelPlan_US915::US915_TX_POWERS[] = { 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0 };
 const uint8_t ChannelPlan_US915::US915_MAX_PAYLOAD_SIZE[] =          { 11, 53, 125, 242, 242, 0, 0, 0, 53, 129, 242, 242, 242, 242, 0, 0 };
 const uint8_t ChannelPlan_US915::US915_MAX_PAYLOAD_SIZE_REPEATER[] = { 11, 53, 125, 222, 222, 0, 0, 0, 33, 109, 222, 222, 222, 222, 0, 0 };
 
@@ -72,7 +71,6 @@ void ChannelPlan_US915::Init() {
     _maxFrequency = US915_FREQ_MAX;
 
     TX_POWERS = US915_TX_POWERS;
-    RADIO_POWERS = US915_RADIO_POWERS;
     MAX_PAYLOAD_SIZE = US915_MAX_PAYLOAD_SIZE;
     MAX_PAYLOAD_SIZE_REPEATER = US915_MAX_PAYLOAD_SIZE_REPEATER;
 
@@ -230,22 +228,26 @@ uint8_t ChannelPlan_US915::SetTxConfig() {
     int8_t max_pwr = _dutyBands[band].PowerMax;
     uint8_t chans_enabled = 0;
 
-    int8_t pwr = 0;
+    int8_t pwr = GetSettings()->Session.TxPower;
 
-    pwr = std::min < int8_t > (GetSettings()->Session.TxPower, max_pwr);
+    if (txDr.Bandwidth == BW_125) {
+        // spec states that if < 50 125kHz channels are enabled, power is limited to 21dB conducted
+        chans_enabled += CountBits(_channelMask[0]);
+        chans_enabled += CountBits(_channelMask[1]);
+        chans_enabled += CountBits(_channelMask[2]);
+        chans_enabled += CountBits(_channelMask[3]);
 
-    // spec states that if < 50 125kHz channels are enabled, power is limited to 21dB conducted
-    chans_enabled += CountBits(_channelMask[0]);
-    chans_enabled += CountBits(_channelMask[1]);
-    chans_enabled += CountBits(_channelMask[2]);
-    chans_enabled += CountBits(_channelMask[3]);
-    if (chans_enabled < 50 && pwr > 21) {
-        pwr = 21;
+        if (chans_enabled < 50 && pwr > 21) {
+            pwr = 21;
+        }
     }
 
+    // Antenna gain is allowed up to +6 dBi, gain above 6 must be reduced from the conducted output
     if (pwr + GetSettings()->Network.AntennaGain >= max_pwr + 6 && GetSettings()->Network.AntennaGain > 6) {
-        pwr -= (GetSettings()->Network.AntennaGain - 6);
+        max_pwr -= (GetSettings()->Network.AntennaGain - 6);
     }
+
+    pwr = std::min < int8_t > (pwr, max_pwr);
 
     for (int i = 20; i >= 0; i--) {
         if (RADIO_POWERS[i] <= pwr) {
@@ -265,11 +267,8 @@ uint8_t ChannelPlan_US915::SetTxConfig() {
     uint8_t cr = txDr.Coderate;
     uint8_t pl = txDr.PreambleLength;
     uint16_t fdev = 0;
-    bool crc = txDr.Crc;
+    bool crc = P2PEnabled() ? false : txDr.Crc;
     bool iq = txDr.TxIQ;
-
-    if (GetSettings()->Network.DisableCRC == true)
-        crc = false;
 
     SxRadio::RadioModems_t modem = SxRadio::MODEM_LORA;
 
@@ -278,6 +277,7 @@ uint8_t ChannelPlan_US915::SetTxConfig() {
         sf = 50e3;
         fdev = 25e3;
         bw = 0;
+        crc = true;
     }
 
     GetRadio()->SetTxConfig(modem, pwr, fdev, bw, sf, cr, pl, false, crc, false, 0, iq, 3e3);
@@ -590,9 +590,9 @@ uint8_t ChannelPlan_US915::HandleAdrCommand(const uint8_t* payload, uint8_t inde
         status &= 0xFD; // Datarate KO
     }
     //
-    // Remark MaxTxPower = 0 and MinTxPower = 10
+    // Remark MaxTxPower = 0 and MinTxPower = 14
     //
-    if (power != 0xF && power > 10) {
+    if (power != 0xF && power > 14) {
         status &= 0xFB; // TxPower KO
     }
 
@@ -793,6 +793,8 @@ uint8_t ChannelPlan_US915::GetNextChannel()
             }
         }
 
+        _dutyBands[0].PowerMax = 26;
+
         GetRadio()->SetChannel(GetSettings()->Network.TxFrequency);
         return LORA_OK;
     }
@@ -840,6 +842,7 @@ uint8_t ChannelPlan_US915::GetNextChannel()
             _dutyBands[0].PowerMax = 30;
     }
 
+    logInfo("Adjust PowerMax to %d", _dutyBands[0].PowerMax);
     logTrace("Number of available channels: %d", nbEnabledChannels);
 
     uint32_t freq = 0;

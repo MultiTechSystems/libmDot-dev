@@ -8,12 +8,22 @@
         "thread-stack-size": {
             "macro_name": "MBED_CONF_APP_THREAD_STACK_SIZE",
             "value": 2048
+        },
+        "lora-radio-stack-size": {
+            "macro_name": "LORA_RADIO_STACK_SIZE",
+            "value": 2560
+        },
+        "lora-app-layer-stack-size": {
+            "macro_name": "LORA_APP_LAYER_STACK_SIZE",
+            "value": 2048
         }
     },
     "target_overrides": {
         "XDOT_L151CC": {
-            "main-stack-size": 2048,
-            "thread-stack-size": 256
+            "main-stack-size": 2560,
+            "thread-stack-size": 256,
+            "lora-app-layer-stack-size": 1280,
+            "lora-radio-stack-size": 1280
         }
     }
 }

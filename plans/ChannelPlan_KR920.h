@@ -233,7 +233,6 @@ namespace lora {
         protected:
 
             static const uint8_t KR920_TX_POWERS[8];                    //!< List of available tx powers
-            static const uint8_t KR920_RADIO_POWERS[21];                 //!< List of calibrated tx powers
             static const uint8_t KR920_MAX_PAYLOAD_SIZE[];              //!< List of max payload sizes for each datarate
             static const uint8_t KR920_MAX_PAYLOAD_SIZE_REPEATER[];     //!< List of repeater compatible max payload sizes for each datarate
 

@@ -36,6 +36,8 @@
 #include <map>
 #include <string>
 
+#include "FlashRecordStore.h"
+
 class mDotEvent;
 class LoRaConfig;
 
@@ -45,7 +47,7 @@ class mDot {
 
     private:
 
-        mDot(lora::ChannelPlan* plan);
+        mDot(lora::ChannelPlan* plan, mbed::BlockDevice* ext_bd = NULL);
         ~mDot();
 
         void initLora();
@@ -54,8 +56,6 @@ class mDot {
 
         static bool validateBaudRate(const uint32_t& baud);
         static bool validateFrequencySubBand(const uint8_t& band);
-        bool validateDataRate(const uint8_t& dr);
-        bool validateRx2DataRate(const uint8_t& dr);
 
         int32_t joinBase(const uint32_t& retries);
         int32_t sendBase(const std::vector<uint8_t>& data, const bool& confirmed = false, const bool& blocking = true, const bool& highBw = false);
@@ -273,7 +273,7 @@ class mDot {
          * @param plan the channel plan to use
          * @returns pointer to mDot object
          */
-        static mDot* getInstance(lora::ChannelPlan* plan);
+        static mDot* getInstance(lora::ChannelPlan* plan, mbed::BlockDevice* ext_bd = NULL);
 
         /**
 	 * Can only be used after a dot has
@@ -370,12 +370,19 @@ class mDot {
 
         /**
          * Add a channel
+         * @param index - 0-15
+         * @param frequency - depends on selected channel plan
+         * @param datarateRange - min and max DR, range 0-F, set to one byte.
+         *       Minimum DR is the low 4 bits
+         *       Maximum DR is the high 4 bits
          * @returns MDOT_OK
          */
         int32_t addChannel(uint8_t index, uint32_t frequency, uint8_t datarateRange);
 
         /**
          * Add a downlink channel
+         * @param index - 0-15
+         * @param frequency - depends on selected channel plan
          * @returns MDOT_OK
          */
         int32_t addDownlinkChannel(uint8_t index, uint32_t frequency);
@@ -919,20 +926,6 @@ class mDot {
         uint32_t getDownLinkCounter();
 
         /**
-         * Enable/disable AES encryption
-         * AES encryption must be enabled for use with Conduit gateway and MTAC_LORA card
-         * @param on true for AES encryption to be enabled
-         * @returns MDOT_OK if success
-         */
-        int32_t setAesEncryption(const bool& on);
-
-        /**
-         * Get AES encryption
-         * @returns true if AES encryption is enabled
-         */
-        bool getAesEncryption();
-
-        /**
          * Get RSSI stats
          * @returns rssi_stats struct containing last, min, max, and avg RSSI in dB
          */
@@ -1136,17 +1129,19 @@ class mDot {
         std::string getDataRateDetails(uint8_t rate);
 
         /**
-         * Set TX power output of radio before antenna gain, default: 14 dBm
-         * actual output power may be limited by local regulations for the chosen frequency
-         * power affects maximum range
-         * @param power 2 dBm - 20 dBm
+         * Set TX power output, default: 30 dBm
+         * Actual output power may be limited by local regulations for the chosen frequency
+         * The setting will be ERP or EIRP depending on the Channel Plan which affects how antenna gain
+         * is applied to meet applicible regulations
+         * TX power affects maximum range
+         * @param power 0 dBm - 30 dBm
          * @returns MDOT_OK if success
          */
         int32_t setTxPower(const uint32_t& power);
 
         /**
          * Get TX power
-         * @returns TX power (2 dBm - 20 dBm)
+         * @returns TX power (0 dBm - 30 dBm)
          */
         uint32_t getTxPower();
 
@@ -1300,20 +1295,6 @@ class mDot {
         uint8_t getAdrAckDelay();
 
         /**
-         * Enable/disable CRC checking of packets
-         * CRC checking must be enabled for use with Conduit gateway and MTAC_LORA card
-         * @param on set to true to enable CRC checking
-         * @returns MDOT_OK if success
-         */
-        int32_t setCrc(const bool& on);
-
-        /**
-         * Get CRC checking
-         * @returns true if CRC checking is enabled
-         */
-        bool getCrc();
-
-        /**
          * Set ack
          * @param retries 0 to disable acks, otherwise 1 - 8
          * @returns MDOT_OK if success
@@ -1325,6 +1306,32 @@ class mDot {
          * @returns 0 if acks are disabled, otherwise retries (1 - 8)
          */
         uint8_t getAck();
+
+        /**
+         * Set Class B Timeout
+         * @param retries 0 - 120
+         * @returns MDOT_OK if success
+         */
+        int32_t setClassBTimeout(const uint8_t& timeout);
+
+        /**
+         * Get Class B Timeout
+         * @returns 0 - 120
+         */
+        uint8_t getClassBTimeout();
+
+         /**
+         * Set Class C Timeout
+         * @param retries 0 - 120
+         * @returns MDOT_OK if success
+         */
+        int32_t setClassCTimeout(const uint8_t& timeout);
+
+        /**
+         * Get Class C Timeout
+         * @returns 0 - 120
+         */
+        uint8_t getClassCTimeout();
 
         /**
          * Set number of packet repeats for unconfirmed frames
@@ -1410,7 +1417,7 @@ class mDot {
          * For the XDOT
          *      in sleep mode, the device can be woken up on GPIO (0-3), UART1_RX, WAKE or by the RTC alarm
          *      in deepsleep mode, the device can only be woken up using the WKUP pin (PA0, WAKE) or by the RTC alarm
-         * @returns MDOT_OK on success
+         * @returns Milliseconds slept on success
          */
         int32_t sleep(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM, const bool& deepsleep = true);
 
@@ -1615,6 +1622,11 @@ class mDot {
         bool nvmRead(uint16_t addr, void* data, uint16_t size);
 #endif /* TARGET_MTS_MDOT_F411RE */
 
+        // Get low voltage indication
+        // @returns true if low voltage is detected
+        //
+        bool lowVoltageDetected();
+
         // get current statistics
         // Join Attempts, Join Fails, Up Packets, Down Packets, Missed Acks
         mdot_stats getStats();
@@ -1631,8 +1643,6 @@ class mDot {
 
         // Convert pin name DIO2-DI8 to string
         static std::string pinName2Str(PinName name);
-
-        uint64_t crc64(uint64_t crc, const unsigned char *s, uint64_t l);
 
         /*************************************************************************
          * The following functions are only used by the AT command application and
@@ -1746,6 +1756,9 @@ class mDot {
          */
         int16_t lbtRssi();
 
+
+        bool getTestModeEnabled();
+        void setTestModeEnabled(bool val);
         void openRxWindow(uint32_t timeout, uint8_t bandwidth = 0);
         void closeRxWindow();
         void sendContinuous(bool enable=true, uint32_t timeout=0, uint32_t frequency=0, int8_t txpower=-1);
@@ -1762,8 +1775,10 @@ class mDot {
         int32_t setRadioMode(const uint8_t& mode);
         std::map<uint8_t, uint8_t> dumpRegisters();
         void eraseFlash();
+        void eraseFileSystem();
 
         void setWakeupCallback(void (*function)(void));
+        uint8_t addMacCommand(uint8_t cmd, uint8_t pc, const uint8_t* pv);
 
         template<typename T>
         void setWakeupCallback(T *object, void (T::*member)(void)) {
@@ -1775,12 +1790,20 @@ class mDot {
         uint32_t setRx2DataRate(uint8_t dr);
         uint8_t getRx2DataRate();
 
+        bool validateDataRate(const uint8_t& dr);
+        bool validateRx2DataRate(const uint8_t& dr);
+
         void mcGroupKeys(uint8_t *mcKeyEncrypt, uint32_t addr, uint8_t groupId, uint32_t frame_count);
+
+#if defined(FOTA) && FLASH_RECORD_STORE_FILE_ENABLE
+        mts::FlashFileRecord* getFotaFileRecord();
+#endif
+
     private:
 
-        void sleep_ms(uint32_t interval,
+        int32_t sleep_ms(uint32_t interval,
                       uint8_t wakeup_mode = RTC_ALARM,
-                      bool deepsleep = true);
+                      bool deep_sleep = true);
 
 
         void wakeup();
@@ -1790,7 +1813,6 @@ class mDot {
         Callback<void()> _wakeup_callback;
 
         bool _standbyFlag;
-        bool _testMode;
         uint8_t _savedPort;
         lora::ChannelPlan* _plan;
 };

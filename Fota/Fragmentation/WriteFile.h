@@ -17,29 +17,50 @@
 
 #ifndef _WRITE_FILE_H
 #define _WRITE_FILE_H
+
 #include "mDot.h"
+#include "FlashRecordStore.h"
+
 #ifdef FOTA
 class WriteFile {
     public:
+#if FLASH_RECORD_STORE_FILE_ENABLE
+        WriteFile(mts::FlashFileRecord* file);
+#else
         WriteFile(mDot* dot);
+#endif
         ~WriteFile();
+        int writeFragment(uint32_t offset, uint8_t* buffer, uint32_t size);
+        int padFile(uint32_t size);
         int writeFile(uint8_t* buffer, uint32_t size);
         int readFile(uint8_t* buffer, uint32_t size);
         int seekFile(uint32_t index);
         int createFile(uint16_t numOfFrags, uint8_t fragSize, uint8_t padding);
-        uint64_t completeFile(uint16_t numOfFrags, uint8_t padding, uint32_t total_frags);
-        void cleanUp(bool complete);
+        bool completeFile();
+        bool checkCrc();
+        uint64_t getCrc() const;
+        int cleanUp(bool complete);
         void reset();
 
     private:
-        mDot* _dot;
-        char* _temp;
-        char _firmware[2];
-        uint8_t* _frag;
+        int doPadding(uint32_t size);
         uint8_t _padding;
         uint8_t _frag_size;
         uint16_t _num_frags;
-        mDot::mdot_file _upgrade, _file;
+        uint64_t _crc;
+        static Mutex _lock;
+
+#if FLASH_RECORD_STORE_FILE_ENABLE
+        mts::FlashFileRecord* _fota_file;
+#else
+        int writeWithVerify(uint8_t* buffer, uint32_t size);
+        int readWithRetry(int32_t pos, uint8_t* buffer, uint32_t size);
+        mDot* _dot;
+        char _firmware[2];
+        uint8_t* _frag;
+        uint32_t _fsize;
+        mDot::mdot_file _upgrade;
+#endif
 };
 #endif
 #endif // WRITE_FILE_H

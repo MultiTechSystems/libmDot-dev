@@ -22,6 +22,7 @@
 #include "FragmentationSession.h"
 #endif
 #include "MulticastGroup.h"
+#include "ApplicationLayerPackage.h"
 
 class Fota {
 
@@ -33,9 +34,12 @@ class Fota {
         static Fota* getInstance();
         void processCmd(uint8_t* payload, uint8_t port, uint8_t size);
         void reset();
+        bool idle();
+        bool txPending();
         void enable(bool enabled);
         bool enable();
         void fixEventQueue();
+        bool ready();
         int32_t timeToStart();
         bool getClockSynced();
         int32_t setClockOffset(uint32_t gps_time);
@@ -53,5 +57,10 @@ class Fota {
         FragmentationSession* _frag_session;
 #endif
         MulticastGroup* _mc_group;
+
+        struct {
+            ApplicationMessage rx;
+            ApplicationMessage tx;
+        } _msg;
 };
 #endif

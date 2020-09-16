@@ -113,7 +113,7 @@ namespace lora {
     const uint16_t PING_SLOT_LENGTH = 30U;                      //!< Duration of each class B ping slot (in milliseconds)
     const uint32_t BEACON_RESERVED_TIME = 2120U;                //!< Time reserved for beacon broadcast (in milliseconds)
     const uint16_t BEACON_GUARD_TIME = 3000U;                   //!< Guard time before beacon transmission where no ping slots can be scheduled (in milliseconds)
-    const uint32_t MAX_BEACONLESS_OP_TIME = 7200U;              //!< Maximum time to operate in class B since last beacon received (in seconds)
+    const std::chrono::seconds MAX_BEACONLESS_OP_TIME = 7200s;  //!< Maximum time to operate in class B since last beacon received (in seconds)
     const uint16_t MAX_CLASS_B_WINDOW_GROWTH = 3U;              //!< Maximum window growth factor for beacons and ping slots in beacon-less operation
     const uint16_t DEFAULT_PING_NB = 1U;                        //!< Default number of ping slots per beacon interval
     const uint16_t CLS_B_PAD = 15U;                             //!< Pad added to the beginning of ping slot rx windows (in milliseconds)
@@ -370,8 +370,8 @@ namespace lora {
             uint8_t TxDatarate;         //!< Datarate for P2P transmit
             uint32_t TxFrequency;       //!< Frequency for P2P transmit
             int8_t AntennaGain;         //!< Antenna Gain
-            uint8_t DisableEncryption;  //!< Disable Encryption
-            uint8_t DisableCRC;         //!< Disable CRC on uplink packets
+            uint8_t ClassBTimeout;      //!< Time in seconds a device is expected to respond to ACK or MAC commands in Class B packet
+            uint8_t ClassCTimeout;      //!< Time in seconds a device is expected to respond to ACK or MAC commands in Class C packet
             uint16_t P2PACKTimeout;
             uint16_t P2PACKBackoff;
             uint8_t JoinRx1DatarateOffset;  //!< Offset for datarate for first window

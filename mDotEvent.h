@@ -34,6 +34,7 @@
 #include "MacEvents.h"
 #include "MTSLog.h"
 #include "MTSText.h"
+#include <chrono>
 
 typedef union {
         uint8_t Value;
@@ -272,11 +273,14 @@ class mDotEvent: public lora::MacEvents {
             logDebug("mDotEvent - ServerTime");
             ServerTimeReceived = true;
 
-            uint64_t current_server_time_ms = static_cast<uint64_t>(seconds) * 1000 +
-                static_cast<uint16_t>(sub_seconds) * 4 + _timeSinceTx.read_ms();
+            std::chrono::milliseconds current_server_time_ms =
+                std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::seconds(seconds)) +
+                std::chrono::milliseconds(static_cast<uint16_t>(sub_seconds) * 4) +
+                std::chrono::milliseconds(_timeSinceTx.read_ms());
+                // std::chrono::duration_cast<std::chrono::milliseconds>(_timeSinceTx.elapsed_time());
 
-            ServerTimeSeconds = static_cast<uint32_t>(current_server_time_ms / 1000);
-            ServerTimeMillis = static_cast<uint16_t>(current_server_time_ms % 1000);
+            ServerTimeSeconds = static_cast<uint32_t>(current_server_time_ms.count() / 1000);
+            ServerTimeMillis = static_cast<uint16_t>(current_server_time_ms.count() % 1000);
         }
 
         virtual void NetworkLinkCheck(int16_t m_rssi, int16_t m_snr, int16_t s_snr, uint8_t s_gateways) {

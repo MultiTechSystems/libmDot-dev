@@ -19,20 +19,25 @@
 #define MULTICASTGROUP_H
 #include "mDot.h"
 #include "mbed.h"
+#include "ApplicationLayerPackage.h"
 #define GPS_EPOCH 315964800U
 #define MULTICAST_SESSIONS 3
 
-class MulticastGroup {
+
+class MulticastGroup : public ApplicationLayerPackage {
     public:
-        MulticastGroup(mDot* dot, std::vector<uint8_t>* ret, bool* filled);
+        MulticastGroup(mDot* dot);
         ~MulticastGroup();
         void reset();
         //void newTime();
-        void processCmd(uint8_t* payload, uint8_t size);
+        uint8_t getPort();
+        void processCmd(ApplicationMessage& recv, ApplicationMessage& resp);
         int32_t timeToStart();
         void fixEventQueue();
         void setClockOffset(int32_t offset);
-
+        bool switchClassIfPending();
+        void switchClass();
+        bool isClassSwitchActive() const;
     private:
         enum MulticastCommands {
             PACKAGE_VERSION,
@@ -52,9 +57,10 @@ class MulticastGroup {
             uint32_t freq;
             uint32_t addr;
             uint32_t max_frame_count;
-            int32_t timetostart;
+            us_timestamp_t timetostart;
             int32_t class_c_end;
             int32_t class_c_start;
+            char dev_class;
             time_t time_setup;
             int8_t periodicity;
         } mcgroup;
@@ -70,15 +76,23 @@ class MulticastGroup {
         time_t _now;
         int32_t _clk_sync;
 
-        mDot* _dot;
-        Thread _event_thread;
-        EventQueue _switch_class_queue;
+        // Thread _event_thread;
+        // EventQueue _switch_class_queue;
         mcgroup _mcGroup[MULTICAST_SESSIONS];
-        std::vector<uint8_t>* _ret;
         char _org_class;
+        Mutex _class_switch_lock;
+
+        struct {
+            mcgroup* group;
+            bool active;
+            bool pending;
+            LowPowerTimeout timer;
+        } _class_switch;
 
         void setupClassB(uint8_t id);
         void setupClassC(uint8_t id);
-        static void switchClass(uint32_t freq, uint8_t dr, char newClass);
+        void setupClassSwitch(uint8_t id);
+
+        void pendClassSwitch();
 };
 #endif

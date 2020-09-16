@@ -21,7 +21,7 @@
 
 using namespace lora;
 
-const uint8_t ChannelPlan_AS923::AS923_RADIO_POWERS[] = { 3, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 18, 19, 20 };
+
 const uint8_t ChannelPlan_AS923::AS923_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_AS923::AS923_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_AS923::AS923_MAX_PAYLOAD_SIZE_400[] = { 0, 0, 11, 53, 125, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -87,7 +87,6 @@ void ChannelPlan_AS923::Init() {
     _minFrequency = 915000000;
     _maxFrequency = 928000000;
 
-    RADIO_POWERS = AS923_RADIO_POWERS;
     MAX_PAYLOAD_SIZE = AS923_MAX_PAYLOAD_SIZE;
     MAX_PAYLOAD_SIZE_REPEATER = AS923_MAX_PAYLOAD_SIZE_REPEATER;
 
@@ -268,11 +267,8 @@ uint8_t ChannelPlan_AS923::SetTxConfig() {
     uint8_t cr = txDr.Coderate;
     uint8_t pl = txDr.PreambleLength;
     uint16_t fdev = 0;
-    bool crc = txDr.Crc;
+    bool crc = P2PEnabled() ? false : txDr.Crc;
     bool iq = txDr.TxIQ;
-
-    if (GetSettings()->Network.DisableCRC == true)
-        crc = false;
 
     SxRadio::RadioModems_t modem = SxRadio::MODEM_LORA;
 
@@ -281,6 +277,7 @@ uint8_t ChannelPlan_AS923::SetTxConfig() {
         sf = 50e3;
         fdev = 25e3;
         bw = 0;
+        crc = true;
     }
 
     GetRadio()->SetTxConfig(modem, pwr, fdev, bw, sf, cr, pl, false, crc, false, 0, iq, 3e3);
@@ -658,7 +655,7 @@ uint32_t ChannelPlan_AS923::GetTimeOffAir()
         return 0;
 
     uint32_t min = 0;
-    uint32_t now = _dutyCycleTimer.read_ms();
+    uint32_t now = std::chrono::duration_cast<std::chrono::milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
 
     min = UINT_MAX;
@@ -718,18 +715,17 @@ void ChannelPlan_AS923::UpdateDutyCycle(uint32_t freq, uint32_t time_on_air_ms) 
         return;
     }
 
-    _dutyCycleTimer.start();
+    uint32_t time_off_air = 0;
+    uint32_t now = std::chrono::duration_cast<std::chrono::milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
     if (GetSettings()->Session.MaxDutyCycle > 0 && GetSettings()->Session.MaxDutyCycle <= 15) {
-        GetSettings()->Session.AggregatedTimeOffEnd = _dutyCycleTimer.read_ms() + time_on_air_ms * GetSettings()->Session.AggregateDutyCycle;
+        GetSettings()->Session.AggregatedTimeOffEnd = now + time_on_air_ms * GetSettings()->Session.AggregateDutyCycle;
         logDebug("Updated Aggregate DCycle Time-off: %lu DC: %f", GetSettings()->Session.AggregatedTimeOffEnd, 1 / float(GetSettings()->Session.AggregateDutyCycle));
     } else {
         GetSettings()->Session.AggregatedTimeOffEnd = 0;
     }
 
 
-    uint32_t time_off_air = 0;
-    uint32_t now = _dutyCycleTimer.read_ms();
 
     for (size_t i = 0; i < _dutyBands.size(); i++) {
         if (_dutyBands[i].TimeOffEnd < now) {
@@ -816,7 +812,7 @@ uint8_t ChannelPlan_AS923::GetNextChannel()
 // Search how many channels are enabled
     DatarateRange range;
     uint8_t dr_index = GetSettings()->Session.TxDatarate;
-    uint32_t now = _dutyCycleTimer.read_ms();
+    uint32_t now = std::chrono::duration_cast<std::chrono::milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
     for (size_t i = 0; i < _dutyBands.size(); i++) {
         if (_dutyBands[i].TimeOffEnd < now || GetSettings()->Test.DisableDutyCycle == lora::ON) {

@@ -21,22 +21,25 @@
 
 #include "mbed.h"
 #include "FragmentationMath.h"
+#include "ApplicationLayerPackage.h"
 #include "mDot.h"
 #include "WriteFile.h"
 
-#define MAX_PARITY 300
-#define FRAG_OFFSET 3
 #define MULTICAST_SESSIONS 3
 
-class FragmentationSession {
+class FragmentationSession : public ApplicationLayerPackage {
 
     public:
-        FragmentationSession(mDot* dot, std::vector<uint8_t>* ret, bool* filled, uint32_t* delay);
+        FragmentationSession(mDot* dot);
         ~FragmentationSession();
-        void processCmd(uint8_t* payload, uint8_t size);
+        uint8_t getPort();
+        void processCmd(ApplicationMessage& downlink, ApplicationMessage& uplink);
         void reset();
+        bool isReady() const;
         bool isComplete() const;
+        bool allFragmentsReceived() const;
         bool cleanUp();
+        bool upgradeFile(ApplicationMessage& uplink);
 
         enum FragCmd {
             PACKAGE_VERSION_FRAG,
@@ -61,12 +64,10 @@ class FragmentationSession {
             bool failed;
             uint8_t fragMatrix;
             uint8_t blockAckDelay;
-            uint8_t total_sessions;
             uint8_t mcGroupBitMask;
-            uint8_t current_session;
             uint16_t index;
             uint16_t last_frag_num;
-            uint32_t total_frags;
+            uint8_t validate_retry;
             FragmentationMath* math;
             FragmentationSessionOpts_t opts;
         } fragGroup;
@@ -81,22 +82,19 @@ class FragmentationSession {
         };
 
         void reset(uint16_t num);
-        void upgradeFile(uint8_t sessionIndex);
         bool processFrame(uint8_t fragIndex, uint16_t index, uint8_t buffer[], size_t size);
         uint32_t getDescriptor() { return _descriptor; }
 
-        mDot* _dot;
         WriteFile* _fh;
         fragGroup _sessions[MULTICAST_SESSIONS];
 
         uint8_t ans;
-        bool* _filled;
-        uint32_t* _delay;
         uint8_t _session_index;
         uint32_t _descriptor;
-        std::vector<uint8_t>* _ret;
+        bool _fragments_received;
         bool _complete;
         bool _validated;
+        bool _ready;
 };
 #endif
 #endif // _FRAGMENTATION_SESSION_H

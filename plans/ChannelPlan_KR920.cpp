@@ -22,7 +22,6 @@ using namespace lora;
 
 // MWF - changed KR920 to match final 1.0.2 regional spec
 const uint8_t ChannelPlan_KR920::KR920_TX_POWERS[] = { 14, 12, 10, 8, 6, 4, 2, 0 };
-const uint8_t ChannelPlan_KR920::KR920_RADIO_POWERS[] = { 3, 3, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 18, 19, 20 };
 const uint8_t ChannelPlan_KR920::KR920_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_KR920::KR920_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -75,7 +74,6 @@ void ChannelPlan_KR920::Init() {
     DefaultLBT();
 
     TX_POWERS = KR920_TX_POWERS;
-    RADIO_POWERS = KR920_RADIO_POWERS;
     MAX_PAYLOAD_SIZE = KR920_MAX_PAYLOAD_SIZE;
     MAX_PAYLOAD_SIZE_REPEATER = KR920_MAX_PAYLOAD_SIZE_REPEATER;
 
@@ -246,11 +244,8 @@ uint8_t ChannelPlan_KR920::SetTxConfig() {
     uint8_t cr = txDr.Coderate;
     uint8_t pl = txDr.PreambleLength;
     uint16_t fdev = 0;
-    bool crc = txDr.Crc;
+    bool crc = P2PEnabled() ? false : txDr.Crc;
     bool iq = txDr.TxIQ;
-
-    if (GetSettings()->Network.DisableCRC == true)
-        crc = false;
 
     SxRadio::RadioModems_t modem = SxRadio::MODEM_LORA;
 
@@ -259,6 +254,7 @@ uint8_t ChannelPlan_KR920::SetTxConfig() {
         sf = 50e3;
         fdev = 25e3;
         bw = 0;
+        crc = true;
     }
 
     GetRadio()->SetTxConfig(modem, pwr, fdev, bw, sf, cr, pl, false, crc, false, 0, iq, 3e3);

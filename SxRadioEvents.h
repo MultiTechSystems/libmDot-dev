@@ -45,6 +45,7 @@ public:
      *                     LoRa: SNR value is two's complement in 1/4 dB
      */
     virtual void RxDone( uint8_t *payload, uint16_t size, int16_t rssi, int16_t snr ) {}
+    virtual void RxDone( uint8_t *payload, uint16_t size, int16_t rssi, int16_t snr, uint8_t wnd ) {}
 
     /*!
      * \brief Called if Beacon Window cannot be opened or is missed

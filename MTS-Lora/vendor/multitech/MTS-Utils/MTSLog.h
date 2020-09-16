@@ -54,11 +54,16 @@ inline const char* className(const std::string& prettyFunction)
     __LOG__(mts::MTSLog::WARNING_LEVEL, format, ##__VA_ARGS__)
 #define logInfo(format, ...) \
     __LOG__(mts::MTSLog::INFO_LEVEL, format, ##__VA_ARGS__)
+#ifndef NDEBUG
 #define logDebug(format, ...) \
     __LOG__(mts::MTSLog::DEBUG_LEVEL, format, ##__VA_ARGS__)
 #define logTrace(format, ...) \
     __LOG__(mts::MTSLog::TRACE_LEVEL, format, ##__VA_ARGS__)
-#endif
+#else
+#define logDebug(...)
+#define logTrace(...)
+#endif  // NDEBUG
+#endif  // MTS_DEBUG
 
 namespace mts {
 

@@ -22,6 +22,8 @@
 #include "ChannelPlan_KR920.h"
 #include "ChannelPlan_IN865.h"
 #include "ChannelPlan_AS923_Japan.h"
+#include "ChannelPlan_AS923_Japan1.h"
+#include "ChannelPlan_AS923_Japan2.h"
 #include "ChannelPlan_RU864.h"
 
 
@@ -35,3 +37,5 @@
 #define CP_RU864 8
 #define CP_AS923_2 9
 #define CP_AS923_3 10
+#define CP_AS923_JAPAN1 11
+#define CP_AS923_JAPAN2 12
