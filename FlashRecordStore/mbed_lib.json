@@ -1,0 +1,61 @@
+{
+    "name": "flash-record-store",
+    "config": {
+        "journal-enable": {
+            "macro_name": "FLASH_RECORD_STORE_JOURNAL_ENABLE",
+            "value": 1
+        },
+        "file-enable": {
+            "macro_name": "FLASH_RECORD_STORE_FILE_ENABLE",
+            "value": 0
+        },
+        "ext-flash-page-size": {
+            "macro_name": "EXT_FLASH_PAGE_SIZE",
+            "value": 256
+        },
+        "ext-flash-sector-size": {
+            "macro_name": "EXT_FLASH_SECTOR_SIZE",
+            "value": 65536
+        },
+        "ext-flash-erase-size": {
+            "macro_name": "EXT_FLASH_ERASE_SIZE",
+            "value": 65536
+        },
+        "bank-size": {
+            "macro_name": "FLASH_RECORD_STORE_BANK_SIZE",
+            "value": 65536
+        },
+        "multithreaded": {
+            "macro_name": "FLASH_RECORD_STORE_MULTITHREADED",
+            "value": 1
+        },
+        "read-attempts": {
+            "macro_name": "FLASH_RECORD_STORE_READ_ATTEMPTS",
+            "value": 3
+        },
+        "write-attempts": {
+            "macro_name": "FLASH_RECORD_STORE_WRITE_ATTEMPTS",
+            "value": 3
+        },
+        "erase-attempts": {
+            "macro_name": "FLASH_RECORD_STORE_ERASE_ATTEMPTS",
+            "value": 3
+        }
+    },
+    "target_overrides": {
+        "MTS_MDOT_F411RE": {
+            "journal-enable": 1,
+            "file-enable": 0,
+            "ext-flash-page-size": 256,
+            "ext-flash-sector-size": 65536,
+            "ext-flash-erase-size": 65536
+        },            
+        "XDOT_L151CC": {
+            "journal-enable": 0,
+            "file-enable": 1,
+            "ext-flash-page-size": 512,
+            "ext-flash-sector-size": 4096,
+            "ext-flash-erase-size": 4096
+        }
+    }
+}
