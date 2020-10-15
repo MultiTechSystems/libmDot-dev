@@ -336,6 +336,12 @@ void ChannelPlan_EU868::LogRxWindow(uint8_t wnd) {
     if (wnd == 1 && _dlChannels[_txChannel].Frequency != 0)
         freq = _dlChannels[_txChannel].Frequency;
 
+    if (sf == SF_FSK) {
+        sf = 0;
+        bw = 0;
+        crc = true;
+    }
+
     logTrace("RX%d on freq: %lu", wnd, freq);
     logTrace("RX DR: %u SF: %u BW: %u CR: %u PL: %u STO: %u CRC: %d IQ: %d", rxDr.Index, sf, bw, cr, pl, sto, crc, iq);
 }
@@ -652,7 +658,7 @@ uint32_t ChannelPlan_EU868::GetTimeOffAir()
     min = UINT_MAX;
     int8_t band = 0;
 
-    if (P2PEnabled()) {
+    if (P2PEnabled() || GetSettings()->Network.TxFrequency != 0) {
         int8_t band = GetDutyBand(GetSettings()->Network.TxFrequency);
         if (_dutyBands[band].TimeOffEnd > now) {
             min = _dutyBands[band].TimeOffEnd - now;

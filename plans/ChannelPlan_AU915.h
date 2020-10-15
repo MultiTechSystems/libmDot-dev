@@ -314,11 +314,11 @@ namespace lora {
             static const uint8_t MAX_ERP_VALUES[];                      //!< Lookup table for Max EIRP (dBm) codes
 
             typedef struct __attribute__((packed)) {
-                uint8_t RFU1[3];
+                uint8_t RFU1[5];
                 uint8_t Time[4];
                 uint8_t CRC1[2];
                 uint8_t GwSpecific[7];
-                uint8_t RFU2[1];
+                uint8_t RFU2[3];
                 uint8_t CRC2[2];
             } BCNPayload;
     };
