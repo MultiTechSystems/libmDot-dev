@@ -218,14 +218,17 @@ class mDotEvent: public lora::MacEvents {
 
         virtual void PacketRx(uint8_t port, uint8_t *payload, uint16_t size, int16_t rssi, int16_t snr, lora::DownlinkControl ctrl, uint8_t slot, uint8_t retries, uint32_t address, uint32_t fcnt, bool dupRx) {
             logDebug("mDotEvent - PacketRx ADDR: %08x", address);
-            RxPort = port;
-            PacketReceived = true;
 
-            memcpy(RxPayload, payload, size);
-            RxPayloadSize = size;
+            if (!dupRx) {
+                RxPort = port;
+                PacketReceived = true;
 
-            if (ctrl.Bits.Ack) {
-                AckReceived = true;
+                memcpy(RxPayload, payload, size);
+                RxPayloadSize = size;
+
+                if (ctrl.Bits.Ack) {
+                    AckReceived = true;
+                }
             }
 
             DuplicateRx = dupRx;

@@ -213,7 +213,7 @@ uint8_t ChannelPlan_AS923::AddChannel(int8_t index, Channel channel) {
 
 uint8_t ChannelPlan_AS923::HandleJoinAccept(const uint8_t* buffer, uint8_t size) {
 
-    if (size == 33) {
+    if (size > 17 && buffer[28] == 0x00) {
         Channel ch;
         int index = _numDefaultChans;
         for (int i = 13; i < size - 5; i += 3) {
@@ -876,7 +876,7 @@ uint8_t ChannelPlan_AS923::GetNextChannel()
 
 uint8_t lora::ChannelPlan_AS923::GetJoinDatarate() {
     uint8_t dr = GetSettings()->Session.TxDatarate;
-    static uint8_t cnt = 0;
+    static uint8_t cnt = 1;
 
     if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
         if ((cnt++ % 12) == 0) {
@@ -1012,7 +1012,7 @@ uint8_t ChannelPlan_AS923::HandleMacCommand(uint8_t* payload, uint8_t& index) {
 
             GetSettings()->Session.Max_EIRP = MAX_ERP_VALUES[(eirp_dwell & 0x0F)];
             logDebug("buffer index %d", GetSettings()->Session.CommandBufferIndex);
-            if (GetSettings()->Session.CommandBufferIndex < COMMANDS_BUFFER_SIZE) {
+            if (GetSettings()->Session.CommandBufferIndex < std::min<int>(GetMaxPayloadSize(), COMMANDS_BUFFER_SIZE)) {
                 logDebug("Add tx param setup mac cmd to buffer");
                 GetSettings()->Session.CommandBuffer[GetSettings()->Session.CommandBufferIndex++] = MOTE_MAC_TX_PARAM_SETUP_ANS;
             }

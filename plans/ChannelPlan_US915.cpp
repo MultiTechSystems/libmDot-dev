@@ -656,6 +656,8 @@ uint8_t ChannelPlan_US915::HandleAdrCommand(const uint8_t* payload, uint8_t inde
                 GetSettings()->Session.TxDatarate = datarate;
             if (power != 0xF)
                 GetSettings()->Session.TxPower = TX_POWERS[power];
+
+            logDebug("ADR Set Redundancy %d", nbRep);
             GetSettings()->Session.Redundancy = nbRep;
         }
     } else {
@@ -689,7 +691,7 @@ uint8_t ChannelPlan_US915::ValidateAdrConfiguration() {
     chans_enabled += CountBits(_channelMask[2]);
     chans_enabled += CountBits(_channelMask[3]);
     // Semtech reference (LoRaMac-node) enforces at least 2 channels
-    if (chans_enabled < 2) {
+    if (datarate < 4 && chans_enabled < 2) {
         logWarning("ADR Channel Mask KO - at least 2 125kHz channels must be enabled");
         status &= 0xFE; // ChannelMask KO
     }

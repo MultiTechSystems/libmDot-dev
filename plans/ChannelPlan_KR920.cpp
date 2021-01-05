@@ -183,7 +183,7 @@ uint8_t ChannelPlan_KR920::AddChannel(int8_t index, Channel channel) {
 
 uint8_t ChannelPlan_KR920::HandleJoinAccept(const uint8_t* buffer, uint8_t size) {
 
-    if (size == 33) {
+    if (size > 17 && buffer[28] == 0x00) {
         Channel ch;
         int index = 3;
         for (int i = 13; i < size - 5; i += 3) {
@@ -826,7 +826,7 @@ uint8_t ChannelPlan_KR920::GetNextChannel()
 
 uint8_t lora::ChannelPlan_KR920::GetJoinDatarate() {
     uint8_t dr = GetSettings()->Session.TxDatarate;
-    static uint8_t cnt = 0;
+    static uint8_t cnt = 1;
 
     if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
         if ((cnt++ % 20) == 0) {

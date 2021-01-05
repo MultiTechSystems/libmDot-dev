@@ -1809,6 +1809,7 @@ class mDot {
         void wakeup();
 
         mdot_stats _stats;
+        Mutex _mutex;
 
         Callback<void()> _wakeup_callback;
 

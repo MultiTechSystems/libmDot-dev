@@ -122,7 +122,7 @@ namespace lora {
     const int16_t DEFAULT_FREE_CHAN_RSSI_THRESHOLD = -90;       //!< Threshold for channel activity detection (CAD) dBm
 
     const uint8_t CHAN_MASK_SIZE = 16;                          //!< Number of bits in a channel mask
-    const uint8_t COMMANDS_BUFFER_SIZE = 15;                    //!< Size of Mac Command buffer
+    const uint8_t COMMANDS_BUFFER_SIZE = 64;                    //!< Size of Mac Command buffer
 
     const uint8_t PKT_HEADER = 0;                               //!< Index to packet mHdr field
     const uint8_t PKT_ADDRESS = 1;                              //!< Index to first byte of packet address field
@@ -404,7 +404,7 @@ namespace lora {
             uint16_t ChannelMask[4];            //!< Current channel mask
             uint16_t ChannelMask500k;           //!< Current channel mask for 500k channels
             uint32_t DownlinkCounter;           //!< Downlink counter of last packet received from server
-            uint32_t UplinkCounter;             //!< Uplink counter of last packet received from server
+            uint32_t UplinkCounter;             //!< Uplink counter of last packet sent to server
             uint8_t Redundancy;                 //!< Number of time to repeat an uplink
             uint8_t MaxDutyCycle;               //!< Current Max Duty Cycle value
             uint32_t JoinTimeOnAir;              //!< Balance of time on air used during join attempts
@@ -612,6 +612,8 @@ namespace lora {
         MOTE_MAC_MULTIPART_END_REQ = 0x85,
         MOTE_MAC_MULTIPART_END_ANS = 0x86
     } MoteCommand;
+
+    extern uint8_t MoteCommandSizes[22];
 
     /*!
      * LoRaWAN server MAC commands

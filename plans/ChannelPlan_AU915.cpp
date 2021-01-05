@@ -695,7 +695,7 @@ uint8_t ChannelPlan_AU915::ValidateAdrConfiguration() {
     chans_enabled += CountBits(_channelMask[2]);
     chans_enabled += CountBits(_channelMask[3]);
     // Semtech reference (LoRaMac-node) enforces at least 2 channels
-    if (chans_enabled < 2) {
+    if (datarate < 4 && chans_enabled < 2) {
         logWarning("ADR Channel Mask KO - at least 2 125kHz channels must be enabled");
         status &= 0xFE; // ChannelMask KO
     }
@@ -1020,7 +1020,7 @@ uint8_t ChannelPlan_AU915::HandleMacCommand(uint8_t* payload, uint8_t& index) {
 
             GetSettings()->Session.Max_EIRP = MAX_ERP_VALUES[(eirp_dwell & 0x0F)];
             logDebug("buffer index %d", GetSettings()->Session.CommandBufferIndex);
-            if (GetSettings()->Session.CommandBufferIndex < COMMANDS_BUFFER_SIZE) {
+            if (GetSettings()->Session.CommandBufferIndex < std::min<int>(GetMaxPayloadSize(), COMMANDS_BUFFER_SIZE)) {
                 logDebug("Add tx param setup mac cmd to buffer");
                 GetSettings()->Session.CommandBuffer[GetSettings()->Session.CommandBufferIndex++] = MOTE_MAC_TX_PARAM_SETUP_ANS;
             }
