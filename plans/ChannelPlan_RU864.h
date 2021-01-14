@@ -31,7 +31,7 @@ namespace lora {
 
     const uint8_t RU864_TX_POWER_MAX = 16;                      //!< Max power for RU864 channel plan
 
-    // 0.1% duty cycle 864-866
+    // 0.1% duty cycle 864-865
     const uint32_t RU864_MILLI_FREQ_MIN = 864000000;
     const uint32_t RU864_MILLI_FREQ_MAX = 865000000;
 

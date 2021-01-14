@@ -21,9 +21,9 @@
 
 using namespace lora;
 
-
-const uint8_t ChannelPlan_AS923::AS923_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
-const uint8_t ChannelPlan_AS923::AS923_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0 };
+// DR2 updated in RP2-1.0.1
+const uint8_t ChannelPlan_AS923::AS923_MAX_PAYLOAD_SIZE[] = { 51, 51, 115, 115, 242, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
+const uint8_t ChannelPlan_AS923::AS923_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 115, 115, 222, 222, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_AS923::AS923_MAX_PAYLOAD_SIZE_400[] = { 0, 0, 11, 53, 125, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_AS923::AS923_MAX_PAYLOAD_SIZE_REPEATER_400[] = { 0, 0, 11, 53, 125, 222, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -102,6 +102,8 @@ void ChannelPlan_AS923::Init() {
     _numChans125k = 16;
     _numChans500k = 0;
     _numDefaultChans = AS923_DEFAULT_NUM_CHANS;
+
+    GetSettings()->Session.UplinkDwelltime = 1;
 
     GetSettings()->Session.Rx2Frequency = AS923_RX2_FREQ + AS923_FREQ_OFFSET_HZ;
     GetSettings()->Session.Rx2DatarateIndex = DR_2;
@@ -357,9 +359,9 @@ RxWindow ChannelPlan_AS923::GetRxWindow(uint8_t window, int8_t id) {
                 index = 0;
             }
 
-            // LoRaWAN 1.0.2 Sec 2.7.7
-            uint8_t minDr = GetSettings()->Session.DownlinkDwelltime == 1 ? 2 : 0;
-            index = std::min<uint8_t>(5, std::max<uint8_t>(minDr, index));
+            // // LoRaWAN 1.0.2 Sec 2.7.7 - removed in RP2-1.0.1
+            // uint8_t minDr = GetSettings()->Session.DownlinkDwelltime == 1 ? 2 : 0;
+            // index = std::min<uint8_t>(5, std::max<uint8_t>(minDr, index));
 
             break;
         }
@@ -651,43 +653,40 @@ uint8_t ChannelPlan_AS923::ValidateAdrConfiguration() {
 
 uint32_t ChannelPlan_AS923::GetTimeOffAir()
 {
-    if (GetSettings()->Test.DisableDutyCycle == lora::ON)
-        return 0;
-
     uint32_t min = 0;
     uint32_t now = std::chrono::duration_cast<std::chrono::milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
+    if (GetSettings()->Test.DisableDutyCycle == lora::OFF) {
+        min = UINT_MAX;
+        int8_t band = 0;
 
-    min = UINT_MAX;
-    int8_t band = 0;
-
-    if (P2PEnabled()) {
-        int8_t band = GetDutyBand(GetSettings()->Network.TxFrequency);
-        if (_dutyBands[band].TimeOffEnd > now) {
-            min = _dutyBands[band].TimeOffEnd - now;
+        if (P2PEnabled()) {
+            int8_t band = GetDutyBand(GetSettings()->Network.TxFrequency);
+            if (_dutyBands[band].TimeOffEnd > now) {
+                min = _dutyBands[band].TimeOffEnd - now;
+            } else {
+                min = 0;
+            }
         } else {
-            min = 0;
-        }
-    } else {
-        for (size_t i = 0; i < _channels.size(); i++) {
-            if (IsChannelEnabled(i) && GetChannel(i).Frequency != 0 &&
-                !(GetSettings()->Session.TxDatarate < GetChannel(i).DrRange.Fields.Min ||
-                  GetSettings()->Session.TxDatarate > GetChannel(i).DrRange.Fields.Max)) {
+            for (size_t i = 0; i < _channels.size(); i++) {
+                if (IsChannelEnabled(i) && GetChannel(i).Frequency != 0 &&
+                    !(GetSettings()->Session.TxDatarate < GetChannel(i).DrRange.Fields.Min ||
+                    GetSettings()->Session.TxDatarate > GetChannel(i).DrRange.Fields.Max)) {
 
-                band = GetDutyBand(GetChannel(i).Frequency);
-                if (band != -1) {
-                    // logDebug("band: %d time-off: %d now: %d", band, _dutyBands[band].TimeOffEnd, now);
-                    if (_dutyBands[band].TimeOffEnd > now) {
-                        min = std::min < uint32_t > (min, _dutyBands[band].TimeOffEnd - now);
-                    } else {
-                        min = 0;
-                        break;
+                    band = GetDutyBand(GetChannel(i).Frequency);
+                    if (band != -1) {
+                        // logDebug("band: %d time-off: %d now: %d", band, _dutyBands[band].TimeOffEnd, now);
+                        if (_dutyBands[band].TimeOffEnd > now) {
+                            min = std::min < uint32_t > (min, _dutyBands[band].TimeOffEnd - now);
+                        } else {
+                            min = 0;
+                            break;
+                        }
                     }
                 }
             }
         }
     }
-
 
     if (GetSettings()->Session.AggregatedTimeOffEnd > 0 && GetSettings()->Session.AggregatedTimeOffEnd > now) {
         min = std::max < uint32_t > (min, GetSettings()->Session.AggregatedTimeOffEnd - now);
@@ -707,14 +706,6 @@ uint32_t ChannelPlan_AS923::GetTimeOffAir()
 
 
 void ChannelPlan_AS923::UpdateDutyCycle(uint32_t freq, uint32_t time_on_air_ms) {
-    if (GetSettings()->Test.DisableDutyCycle == lora::ON) {
-        _dutyCycleTimer.stop();
-        for (size_t i = 0; i < _dutyBands.size(); i++) {
-            _dutyBands[i].TimeOffEnd = 0;
-        }
-        return;
-    }
-
     uint32_t time_off_air = 0;
     uint32_t now = std::chrono::duration_cast<std::chrono::milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
@@ -724,8 +715,6 @@ void ChannelPlan_AS923::UpdateDutyCycle(uint32_t freq, uint32_t time_on_air_ms) 
     } else {
         GetSettings()->Session.AggregatedTimeOffEnd = 0;
     }
-
-
 
     for (size_t i = 0; i < _dutyBands.size(); i++) {
         if (_dutyBands[i].TimeOffEnd < now) {
@@ -745,7 +734,6 @@ void ChannelPlan_AS923::UpdateDutyCycle(uint32_t freq, uint32_t time_on_air_ms) 
             }
         }
     }
-
 
     ResetDutyCycleTimer();
 }

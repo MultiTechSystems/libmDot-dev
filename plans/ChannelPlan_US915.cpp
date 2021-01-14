@@ -707,9 +707,6 @@ uint8_t ChannelPlan_US915::ValidateAdrConfiguration() {
 
 uint32_t ChannelPlan_US915::GetTimeOffAir()
 {
-    if (GetSettings()->Test.DisableDutyCycle == lora::ON)
-        return 0;
-
     uint32_t min = 0;
     uint32_t now = _dutyCycleTimer.read_ms();
 
@@ -891,9 +888,7 @@ uint8_t lora::ChannelPlan_US915::GetJoinDatarate() {
     static bool altdr = false;
 
     if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
-
         if (GetSettings()->Network.FrequencySubBand == 0) {
-
             if (fsb < 9) {
                 SetFrequencySubBand(fsb);
                 logDebug("JoinDatarate setting frequency sub band to %d",fsb);

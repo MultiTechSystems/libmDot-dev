@@ -613,43 +613,40 @@ uint8_t ChannelPlan_RU864::ValidateAdrConfiguration() {
 
 uint32_t ChannelPlan_RU864::GetTimeOffAir()
 {
-    if (GetSettings()->Test.DisableDutyCycle == lora::ON || _LBT_TimeUs > 0)
-        return 0;
-
     uint32_t min = 0;
     uint32_t now = _dutyCycleTimer.read_ms();
 
+    if (GetSettings()->Test.DisableDutyCycle == lora::OFF && _LBT_TimeUs == 0) {
+        min = UINT_MAX;
+        int8_t band = 0;
 
-    min = UINT_MAX;
-    int8_t band = 0;
-
-    if (P2PEnabled()) {
-        int8_t band = GetDutyBand(GetSettings()->Network.TxFrequency);
-        if (_dutyBands[band].TimeOffEnd > now) {
-            min = _dutyBands[band].TimeOffEnd - now;
+        if (P2PEnabled()) {
+            int8_t band = GetDutyBand(GetSettings()->Network.TxFrequency);
+            if (_dutyBands[band].TimeOffEnd > now) {
+                min = _dutyBands[band].TimeOffEnd - now;
+            } else {
+                min = 0;
+            }
         } else {
-            min = 0;
-        }
-    } else {
-        for (size_t i = 0; i < _channels.size(); i++) {
-            if (IsChannelEnabled(i) && GetChannel(i).Frequency != 0 &&
-                !(GetSettings()->Session.TxDatarate < GetChannel(i).DrRange.Fields.Min ||
-                  GetSettings()->Session.TxDatarate > GetChannel(i).DrRange.Fields.Max)) {
+            for (size_t i = 0; i < _channels.size(); i++) {
+                if (IsChannelEnabled(i) && GetChannel(i).Frequency != 0 &&
+                    !(GetSettings()->Session.TxDatarate < GetChannel(i).DrRange.Fields.Min ||
+                    GetSettings()->Session.TxDatarate > GetChannel(i).DrRange.Fields.Max)) {
 
-                band = GetDutyBand(GetChannel(i).Frequency);
-                if (band != -1) {
-                    // logDebug("band: %d time-off: %d now: %d", band, _dutyBands[band].TimeOffEnd, now);
-                    if (_dutyBands[band].TimeOffEnd > now) {
-                        min = std::min < uint32_t > (min, _dutyBands[band].TimeOffEnd - now);
-                    } else {
-                        min = 0;
-                        break;
+                    band = GetDutyBand(GetChannel(i).Frequency);
+                    if (band != -1) {
+                        // logDebug("band: %d time-off: %d now: %d", band, _dutyBands[band].TimeOffEnd, now);
+                        if (_dutyBands[band].TimeOffEnd > now) {
+                            min = std::min < uint32_t > (min, _dutyBands[band].TimeOffEnd - now);
+                        } else {
+                            min = 0;
+                            break;
+                        }
                     }
                 }
             }
         }
     }
-
 
     if (GetSettings()->Session.AggregatedTimeOffEnd > 0 && GetSettings()->Session.AggregatedTimeOffEnd > now) {
         min = std::max < uint32_t > (min, GetSettings()->Session.AggregatedTimeOffEnd - now);
@@ -669,13 +666,6 @@ uint32_t ChannelPlan_RU864::GetTimeOffAir()
 
 
 void ChannelPlan_RU864::UpdateDutyCycle(uint32_t freq, uint32_t time_on_air_ms) {
-    if (GetSettings()->Test.DisableDutyCycle == lora::ON || _LBT_TimeUs > 0) {
-        _dutyCycleTimer.stop();
-        for (size_t i = 0; i < _dutyBands.size(); i++) {
-            _dutyBands[i].TimeOffEnd = 0;
-        }
-        return;
-    }
 
     _dutyCycleTimer.start();
 
@@ -685,7 +675,6 @@ void ChannelPlan_RU864::UpdateDutyCycle(uint32_t freq, uint32_t time_on_air_ms) 
     } else {
         GetSettings()->Session.AggregatedTimeOffEnd = 0;
     }
-
 
     uint32_t time_off_air = 0;
     uint32_t now = _dutyCycleTimer.read_ms();
@@ -732,7 +721,7 @@ std::vector<uint8_t> lora::ChannelPlan_RU864::GetChannelRanges() {
 }
 
 void lora::ChannelPlan_RU864::EnableDefaultChannels() {
-    _channelMask[0] |= 0x0007;
+    _channelMask[0] |= 0x0003;
 }
 
 uint8_t ChannelPlan_RU864::GetNextChannel()

@@ -97,7 +97,7 @@ void ChannelPlan_AU915::Init() {
     GetSettings()->Session.PingSlotDatarateIndex = AU915_BEACON_DR;
     GetSettings()->Session.PingSlotFreqHop = true;
 
-    _minDatarate = AU915_MIN_DATARATE;
+    _minDatarate = lora::DR_2;
     _maxDatarate = AU915_MAX_DATARATE;
     _minRx2Datarate = DR_8;
     _maxRx2Datarate = DR_13;
@@ -158,6 +158,7 @@ void ChannelPlan_AU915::Init() {
 
     GetSettings()->Session.TxDatarate = DR_0;
     GetSettings()->Session.TxPower = GetSettings()->Network.TxPower;
+    GetSettings()->Session.UplinkDwelltime = 1;
 
     SetFrequencySubBand(GetSettings()->Network.FrequencySubBand);
 
@@ -684,24 +685,29 @@ uint8_t ChannelPlan_AU915::ValidateAdrConfiguration() {
             logWarning("ADR Datarate KO - outside allowed range");
             status &= 0xFD; // Datarate KO
         }
+        if (GetSettings()->Session.UplinkDwelltime != 0 && datarate < DR_2) {
+            logWarning("ADR Datarate KO - TxDwelltime != 0 and DR < 2");
+            status &= 0xFD; // Datarate KO
+        }
         if (power < _minTxPower || power > _maxTxPower) {
             logWarning("ADR TX Power KO - outside allowed range");
             status &= 0xFB; // TxPower KO
         }
     }
+
     // at least 2 125kHz channels must be enabled
     chans_enabled += CountBits(_channelMask[0]);
     chans_enabled += CountBits(_channelMask[1]);
     chans_enabled += CountBits(_channelMask[2]);
     chans_enabled += CountBits(_channelMask[3]);
     // Semtech reference (LoRaMac-node) enforces at least 2 channels
-    if (datarate < 4 && chans_enabled < 2) {
+    if (datarate < 6 && chans_enabled < 2) {
         logWarning("ADR Channel Mask KO - at least 2 125kHz channels must be enabled");
         status &= 0xFE; // ChannelMask KO
     }
 
-    // if TXDR == 4 (SF8@500kHz) at least 1 500kHz channel must be enabled
-    if (datarate == DR_4 && (CountBits(_channelMask[4] & 0xFF) == 0)) {
+    // if TXDR == 6 (SF8@500kHz) at least 1 500kHz channel must be enabled
+    if (datarate == DR_6 && (CountBits(_channelMask[4] & 0xFF) == 0)) {
         logWarning("ADR Datarate KO - DR4 requires at least 1 500kHz channel enabled");
         status &= 0xFD; // Datarate KO
     }
@@ -711,9 +717,6 @@ uint8_t ChannelPlan_AU915::ValidateAdrConfiguration() {
 
 uint32_t ChannelPlan_AU915::GetTimeOffAir()
 {
-    if (GetSettings()->Test.DisableDutyCycle == lora::ON)
-        return 0;
-
     uint32_t min = 0;
     uint32_t now = _dutyCycleTimer.read_ms();
 
@@ -888,23 +891,30 @@ uint8_t ChannelPlan_AU915::GetNextChannel()
 uint8_t lora::ChannelPlan_AU915::GetJoinDatarate() {
     uint8_t dr = GetSettings()->Session.TxDatarate;
     static uint8_t fsb = 1;
-    static uint8_t dr4_fsb = 1;
+    static uint8_t dr6_fsb = 1;
     static bool altdr = false;
 
-    dr = lora::DR_2;
-
     if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
-
         if (GetSettings()->Network.FrequencySubBand == 0) {
-            SetFrequencySubBand(fsb);
-            logDebug("JoinDatarate setting frequency sub band to %d",fsb);
-
-            if (fsb < 8) {
+            if (fsb < 9) {
+                SetFrequencySubBand(fsb);
+                logDebug("JoinDatarate setting frequency sub band to %d",fsb);
                 fsb++;
+                dr = lora::DR_2;
             } else {
+                dr = lora::DR_6;
                 fsb = 1;
+                dr6_fsb++;
+                if(dr6_fsb > 8)
+                    dr6_fsb = 1;
+                SetFrequencySubBand(dr6_fsb);
             }
+        } else if (altdr && CountBits(_channelMask[4] > 0)) {
+            dr = lora::DR_6;
+        } else {
+            dr = lora::DR_2;
         }
+        altdr = !altdr;
     }
 
     return dr;

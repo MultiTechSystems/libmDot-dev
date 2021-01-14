@@ -271,10 +271,10 @@ namespace lora {
      * Datarate range for a Channel
      */
     typedef union {
-            int8_t Value;
+            uint8_t Value;
             struct {
-                    int8_t Min :4;
-                    int8_t Max :4;
+                    uint8_t Min :4;
+                    uint8_t Max :4;
             } Fields;
     } DatarateRange;
 
