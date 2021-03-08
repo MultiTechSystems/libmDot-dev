@@ -184,6 +184,12 @@ class mDot {
             RTC_ALARM_OR_INTERRUPT
         };
 
+        enum wakeup_trigger {
+            WAKE_TRIGGER_ANY,
+            WAKE_TRIGGER_RISE,
+            WAKE_TRIGGER_FALL
+        };
+
         enum UserBackupRegs {
             UBR0,
             UBR1,
@@ -1445,12 +1451,36 @@ class mDot {
         void setWakePin(const PinName& pin);
 
         /**
+         * Set wake pin mode
+         * @param mode the mode used for the wake pin
+         */
+        void setWakePinMode(PinMode mode);
+
+        /**
+         * Set wake pin trigger
+         * @param trigger the trigger used for the wake pin
+         */
+        void setWakePinTrigger(uint8_t trigger);
+
+        /**
          * Get wake pin
          * @returns the pin to use to wake the device from sleep mode
          *      For MDOT, XBEE_DI (2-8)
          *      For XDOT, GPIO (0-3), UART1_RX, or WAKE
          */
         PinName getWakePin();
+
+        /**
+         * Get wake pin mode
+         * @returns the mode used for the wake pin
+         */
+        PinMode getWakePinMode();
+
+        /**
+         * Get wake pin trigger
+         * @returns the trigger condition for waking
+         */
+        uint8_t getWakePinTrigger();
 
         /**
          * Write data in a user backup register

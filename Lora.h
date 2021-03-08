@@ -27,9 +27,7 @@
 
 namespace lora {
 
-#ifndef MAC_VERSION
-    const std::string MAC_VERSION = "1.0.4";
-#endif
+    extern const char* const MAC_VERSION;
 
     /**
      * Frequency bandwidth of a Datarate, higher bandwidth gives higher datarate
