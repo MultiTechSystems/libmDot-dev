@@ -1631,6 +1631,9 @@ class mDot {
         // Does not include SPIFFS overhead
         uint32_t getUsedSpace();
 
+        // Return free space for files saved in FLASH
+        uint32_t getFreeSpace();
+
         bool repairFlashFileSystem();
 #else
         ///////////////////////////////////////////////////////////////
