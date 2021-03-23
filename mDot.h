@@ -932,14 +932,16 @@ class mDot {
         uint32_t getDownLinkCounter();
 
         /**
-         * Get RSSI stats
+         * Get RSSI stats.  All fields are invalid if last is invalid.
          * @returns rssi_stats struct containing last, min, max, and avg RSSI in dB
+         * @see lora::INVALID_RSSI
          */
         rssi_stats getRssiStats();
 
         /**
-         * Get SNR stats
+         * Get SNR stats.  All fields are invalid if last is invalid.
          * @returns snr_stats struct containing last, min, max, and avg SNR in cB
+         * @see lora::INVALID_SNR
          */
         snr_stats getSnrStats();
 
