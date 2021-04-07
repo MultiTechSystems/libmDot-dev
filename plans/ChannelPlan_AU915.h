@@ -250,6 +250,13 @@ namespace lora {
              */
             virtual std::vector<uint8_t> GetChannelRanges();
 
+            /**
+             * Set the duty cycle for the given duty band
+             * @param band index
+             * @param dutyCycle ratio of time off air to time on air
+             * @return LORA_UNSUPPORTED
+             */
+            virtual uint8_t SetDutyBandDutyCycle(uint8_t band, uint16_t dutyCycle);
 
             /**
              * Print log message for given rx window

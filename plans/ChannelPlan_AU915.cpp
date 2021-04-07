@@ -781,6 +781,10 @@ std::vector<uint8_t> lora::ChannelPlan_AU915::GetChannelRanges() {
 
 }
 
+uint8_t ChannelPlan_AU915::SetDutyBandDutyCycle(uint8_t band, uint16_t dutyCycle) {
+    return LORA_UNSUPPORTED;
+}
+
 void lora::ChannelPlan_AU915::EnableDefaultChannels() {
     SetFrequencySubBand(GetFrequencySubBand());
 }

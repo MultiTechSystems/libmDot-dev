@@ -452,6 +452,13 @@ namespace lora {
             virtual uint32_t GetDutyBandTimeOff(uint8_t band);
 
             /**
+             * Set the duty cycle for the given duty band
+             * @param band index
+             * @param dutyCycle ratio of time off air to time on air
+             */
+            virtual uint8_t SetDutyBandDutyCycle(uint8_t band, uint16_t dutyCycle);
+
+            /**
              * Get the number of duty bands in the current channel plan
              * @return number of bands
              */
@@ -463,6 +470,13 @@ namespace lora {
              * @return index of duty band
              */
             virtual int8_t GetDutyBand(uint32_t freq);
+
+            /**
+             * Get a pointer to a duty band object
+             * @param index duty band index
+             * @param band output DutyBand object
+             */
+            virtual void GetDutyBand(uint8_t index, const DutyBand** band) const;
 
             /**
              * Add duty band

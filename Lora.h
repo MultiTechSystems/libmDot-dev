@@ -198,7 +198,8 @@ namespace lora {
         LORA_MAX_PAYLOAD_EXCEEDED = 18,
         LORA_LBT_CHANNEL_BUSY = 19,
         LORA_BEACON_SIZE = 20,
-        LORA_BEACON_CRC = 21
+        LORA_BEACON_CRC = 21,
+        LORA_UNSUPPORTED = 22
     };
 
     /**

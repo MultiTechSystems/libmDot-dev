@@ -125,6 +125,7 @@ class mDot {
             MDOT_MAX_PAYLOAD_EXCEEDED = -12,
             MDOT_LBT_CHANNEL_BUSY = -13,
             MDOT_NOT_IDLE = -14,
+            MDOT_UNSUPPORTED = -15,
             MDOT_ERROR = -1024,
         } mdot_ret_code;
 
@@ -1714,6 +1715,15 @@ class mDot {
 
         int32_t setRxDataRate(const uint8_t& dr);
         uint8_t getRxDataRate();
+
+        
+        // set/get duty cycle
+        int32_t setDutyCycle(uint8_t dc);
+        uint8_t getDutyCycle();
+
+        int32_t setDutyBandDutyCycle(uint8_t band, uint16_t dc);
+        uint8_t getDutyBands();
+        const lora::DutyBand* getDutyBand(uint8_t band);
 
         // get/set TX/RX frequency
         // if set to 0, device will hop frequencies
