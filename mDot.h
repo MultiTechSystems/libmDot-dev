@@ -1638,6 +1638,20 @@ class mDot {
         uint32_t getFreeSpace();
 
         bool repairFlashFileSystem();
+
+        /** 
+         * Write Device EUI, Network ID, Netowrk Key, and Gen App Key to OTP.
+         * @return Number of write remaining if positive. A negative number
+         * indicates an error.
+         */
+        int writeOtp();
+
+        /** 
+         * Verify the data in OTP matches current values.
+         * @param commits the number of remaining commits if not NULL
+         * @return True if data matches.
+         */
+        bool verifyOtp(int* commits);
 #else
         ///////////////////////////////////////////////////////////////
         // EEPROM (Non Volatile Memory) Operation Functions for xDot //
