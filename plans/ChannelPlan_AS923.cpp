@@ -75,6 +75,10 @@ void ChannelPlan_AS923::Init() {
     #define AS923_FREQ_OFFSET_HZ -6600000U
     _plan = AS923_3;
     _planName = "AS923-3";
+    #elif CHANNEL_PLAN == CP_AS923_4
+    #define AS923_FREQ_OFFSET_HZ -5900000U
+    _plan = AS923_4;
+    _planName = "AS923-4";
     #else // CHANNEL_PLAN == CP_AS923
     #define AS923_FREQ_OFFSET_HZ 0U
     _plan = AS923;

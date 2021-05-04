@@ -888,7 +888,7 @@ uint8_t ChannelPlan_US915::GetNextChannel()
 uint8_t lora::ChannelPlan_US915::GetJoinDatarate() {
     uint8_t dr = GetSettings()->Session.TxDatarate;
     static uint8_t fsb = 1;
-    static uint8_t dr4_fsb = 1;
+    static uint8_t dr4_fsb = 0;
     static bool altdr = false;
 
     if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {

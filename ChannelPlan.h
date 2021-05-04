@@ -66,6 +66,7 @@ namespace lora {
                 AS923_3 = DYNAMIC | 0x07,
                 AS923_JAPAN1 = DYNAMIC | 0x08,
                 AS923_JAPAN2 = DYNAMIC | 0x09,
+                AS923_4 = DYNAMIC | 0x0A,
 
                 NONE = 0xFF,
             };
