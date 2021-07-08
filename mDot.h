@@ -41,13 +41,14 @@
 class mDotEvent;
 class LoRaConfig;
 
+mbed::BlockDevice * mdot_override_external_block_device();
 
 class mDot {
         friend class mDotEvent;
 
     private:
 
-        mDot(lora::ChannelPlan* plan, mbed::BlockDevice* ext_bd = NULL);
+        mDot(lora::ChannelPlan* plan);
         ~mDot();
 
         void initLora();
@@ -280,7 +281,7 @@ class mDot {
          * @param plan the channel plan to use
          * @returns pointer to mDot object
          */
-        static mDot* getInstance(lora::ChannelPlan* plan, mbed::BlockDevice* ext_bd = NULL);
+        static mDot* getInstance(lora::ChannelPlan* plan);
 
         /**
 	 * Can only be used after a dot has
