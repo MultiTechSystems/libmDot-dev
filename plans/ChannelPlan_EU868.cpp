@@ -681,6 +681,9 @@ uint32_t ChannelPlan_EU868::GetTimeOffAir()
                 }
             }
         }
+
+        if (min == UINT_MAX)
+            min = 0;
     }
 
     if (GetSettings()->Session.AggregatedTimeOffEnd > 0 && GetSettings()->Session.AggregatedTimeOffEnd > now) {
