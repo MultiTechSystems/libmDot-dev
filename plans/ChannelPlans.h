@@ -25,7 +25,7 @@
 #include "ChannelPlan_AS923_Japan1.h"
 #include "ChannelPlan_AS923_Japan2.h"
 #include "ChannelPlan_RU864.h"
-
+#include "ChannelPlan_GLOBAL.h"
 
 #define CP_AS923 1
 #define CP_AU915 2
@@ -40,3 +40,4 @@
 #define CP_AS923_JAPAN1 11
 #define CP_AS923_JAPAN2 12
 #define CP_AS923_4 13
+#define CP_GLOBAL 14

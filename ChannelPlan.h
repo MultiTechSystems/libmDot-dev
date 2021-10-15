@@ -561,6 +561,7 @@ namespace lora {
             virtual bool IsPlanDynamic();
             static bool IsPlanFixed(uint8_t plan);
             static bool IsPlanDynamic(uint8_t plan);
+            bool IsPlanAS923();
             virtual uint32_t GetMinFrequency();
             virtual uint32_t GetMaxFrequency();
 
