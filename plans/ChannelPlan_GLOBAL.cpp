@@ -1143,7 +1143,7 @@ uint8_t ChannelPlan_GLOBAL::HandleNewChannel(const uint8_t* payload, uint8_t ind
         index += 3;
         chParam.DrRange.Value = payload[index++];
 
-        if (channelIndex < 3 || channelIndex > _channels.size() - 1) {
+        if (channelIndex < _numDefaultChans || channelIndex > _channels.size() - 1) {
             logError("New Channel index KO");
             status &= 0xFE; // Channel index KO
         }
