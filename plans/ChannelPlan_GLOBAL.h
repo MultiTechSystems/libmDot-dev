@@ -219,6 +219,18 @@ namespace lora {
              */
             virtual void EnableDefaultChannels();
 
+            /**
+             * Get max payload size for current datarate
+             * @return size in bytes
+             */
+            virtual uint8_t GetMaxPayloadSize() { return GetMaxPayloadSize(GetSettings()->Session.TxDatarate); }
+
+            /**
+             * Get max payload size for given datarate
+             * @return size in bytes
+             */
+            virtual uint8_t GetMaxPayloadSize(uint8_t dr);
+
             virtual uint8_t GetMinDatarate();
 
             virtual uint8_t GetMaxDatarate();

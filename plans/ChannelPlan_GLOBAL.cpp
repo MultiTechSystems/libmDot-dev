@@ -1029,11 +1029,21 @@ RxWindow ChannelPlan_GLOBAL::GetRxWindow(uint8_t window, int8_t id) {
                 }
             } else {
                 rxw.Frequency = _channels[_txChannel].Frequency;
-
-                if (GetSettings()->Session.TxDatarate > GetSettings()->Session.Rx1DatarateOffset) {
-                    index = GetSettings()->Session.TxDatarate - GetSettings()->Session.Rx1DatarateOffset;
+                if (IsPlanAS923()) {
+                    if (GetSettings()->Session.Rx1DatarateOffset >= 6) {
+                        index =  GetSettings()->Session.TxDatarate + (GetSettings()->Session.Rx1DatarateOffset == 6 ? 1 : 2);
+                        index = std::min<int>(index, _maxDatarate);
+                    } else if (GetSettings()->Session.TxDatarate > GetSettings()->Session.Rx1DatarateOffset) {
+                        index = GetSettings()->Session.TxDatarate - GetSettings()->Session.Rx1DatarateOffset;
+                    } else {
+                        index = 0;
+                    }
                 } else {
-                    index = 0;
+                    if (GetSettings()->Session.TxDatarate > GetSettings()->Session.Rx1DatarateOffset) {
+                        index = GetSettings()->Session.TxDatarate - GetSettings()->Session.Rx1DatarateOffset;
+                    } else {
+                        index = 0;
+                    }
                 }
             }
             break;
@@ -1968,9 +1978,9 @@ uint8_t lora::ChannelPlan_GLOBAL::CalculateJoinBackoff(uint8_t size) {
 }
 
 uint8_t ChannelPlan_GLOBAL::HandleMacCommand(uint8_t* payload, uint8_t& index) {
-    logDebug("AU915 Handle Mac index: %d", index);
+    logDebug("GLOBAL Handle Mac index: %d", index);
 
-    if (_plan == AU915 || _plan == AS923) {
+    if (_plan == AU915 || IsPlanAS923()) {
         switch (payload[index++]) {
             case SRV_MAC_TX_PARAM_SETUP_REQ: {
                 uint8_t eirp_dwell = payload[index++];
@@ -2010,6 +2020,28 @@ uint8_t ChannelPlan_GLOBAL::HandleMacCommand(uint8_t* payload, uint8_t& index) {
 
     return LORA_OK;
 }
+
+uint8_t ChannelPlan_GLOBAL::GetMaxPayloadSize(uint8_t dr) {
+    if (GetSettings()->Session.UplinkDwelltime == 1) {
+        if (_plan == AU915) {
+            if (GetSettings()->Network.RepeaterMode)
+                return AU915_MAX_PAYLOAD_SIZE_REPEATER_400[dr];
+            else
+                return AU915_MAX_PAYLOAD_SIZE_400[dr];
+        } else if (IsPlanAS923()) {
+            if (GetSettings()->Network.RepeaterMode)
+                return AS923_MAX_PAYLOAD_SIZE_REPEATER_400[dr];
+            else
+                return AS923_MAX_PAYLOAD_SIZE_400[dr];
+        }
+    } else {
+        if (GetSettings()->Network.RepeaterMode)
+            return MAX_PAYLOAD_SIZE_REPEATER[dr];
+        else
+            return MAX_PAYLOAD_SIZE[dr];
+    }
+}
+
 
 void ChannelPlan_GLOBAL::DecrementDatarate() {
     if(GetSettings()->Session.UplinkDwelltime == 0) {
