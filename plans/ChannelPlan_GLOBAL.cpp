@@ -2040,6 +2040,8 @@ uint8_t ChannelPlan_GLOBAL::GetMaxPayloadSize(uint8_t dr) {
         else
             return MAX_PAYLOAD_SIZE[dr];
     }
+
+    return 0;
 }
 
 
