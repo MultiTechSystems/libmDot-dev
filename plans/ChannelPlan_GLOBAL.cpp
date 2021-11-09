@@ -1144,6 +1144,7 @@ uint8_t ChannelPlan_GLOBAL::HandleNewChannel(const uint8_t* payload, uint8_t ind
     if (IsPlanFixed()) {
         // Not Supported in US915/AU915
         status = 0;
+        return LORA_UNSUPPORTED;
     } else {
         status = 0x03;
         uint8_t channelIndex = 0;
@@ -1193,6 +1194,7 @@ uint8_t ChannelPlan_GLOBAL::HandleDownlinkChannelReq(const uint8_t* payload, uin
     if (IsPlanFixed()) {
         // Not Supported in US915/AU915
         status = 0;
+        return LORA_UNSUPPORTED;
     } else {
         uint8_t channelIndex = 0;
         Channel chParam;
