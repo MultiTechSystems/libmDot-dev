@@ -724,17 +724,18 @@ void ChannelPlan_GLOBAL::Init_AS923() {
 }
 
 void ChannelPlan_GLOBAL::DefaultLBT() {
+    _LBT_TimeUs = 0;
+    _LBT_Threshold = 0;
+
     if (IsPlanAS923()) {
         if (_plan_id == AS923_JAPAN2) {
             _LBT_TimeUs = 128;
             _LBT_Threshold = -80;
-        } else {
+        } else if (_plan_id == AS923_JAPAN1
+          || _plan_id == AS923_JAPAN) {
             _LBT_TimeUs = 5000;
             _LBT_Threshold = -80;
         }
-    } else {
-        _LBT_TimeUs = 0;
-        _LBT_Threshold = 0;
     }
 }
 
