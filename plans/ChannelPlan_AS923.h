@@ -238,13 +238,13 @@ namespace lora {
              * Get max payload size for current datarate
              * @return size in bytes
              */
-            virtual uint8_t GetMaxPayloadSize();
+            virtual uint8_t GetMaxPayloadSize() { return GetMaxPayloadSize(GetSettings()->Session.TxDatarate); }
 
             /**
              * Get max payload size for given datarate
              * @return size in bytes
              */
-            virtual uint8_t GetMaxPayloadSize(uint8_t dr) { return ChannelPlan::GetMaxPayloadSize(dr); }
+            virtual uint8_t GetMaxPayloadSize(uint8_t dr, Direction dir = DIR_UP);
 
             /**
              * Decrements the datarate based on TxDwellTime

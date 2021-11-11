@@ -229,7 +229,7 @@ namespace lora {
              * Get max payload size for given datarate
              * @return size in bytes
              */
-            virtual uint8_t GetMaxPayloadSize(uint8_t dr);
+            virtual uint8_t GetMaxPayloadSize(uint8_t dr, Direction dir = DIR_UP);
 
             virtual uint8_t GetMinDatarate();
 

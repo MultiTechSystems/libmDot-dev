@@ -201,7 +201,7 @@ namespace lora {
              * Get max payload size for a given datarate
              * @return size in bytes
              */
-            virtual uint8_t GetMaxPayloadSize(uint8_t dr);
+            virtual uint8_t GetMaxPayloadSize(uint8_t dr, Direction dir = DIR_UP);
 
             /**
              * Get rx window settings for requested window

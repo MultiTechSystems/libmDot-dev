@@ -2038,8 +2038,8 @@ uint8_t ChannelPlan_GLOBAL::HandleMacCommand(uint8_t* payload, uint8_t& index) {
     return LORA_OK;
 }
 
-uint8_t ChannelPlan_GLOBAL::GetMaxPayloadSize(uint8_t dr) {
-    if (GetSettings()->Session.UplinkDwelltime == 1) {
+uint8_t ChannelPlan_GLOBAL::GetMaxPayloadSize(uint8_t dr, Direction dir) {
+    if (GetSettings()->Session.UplinkDwelltime == 1 && dir == DIR_UP) {
         if (_plan == AU915) {
             if (GetSettings()->Network.RepeaterMode)
                 return AU915_MAX_PAYLOAD_SIZE_REPEATER_400[dr];

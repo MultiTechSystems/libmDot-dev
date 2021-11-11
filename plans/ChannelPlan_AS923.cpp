@@ -326,18 +326,20 @@ void ChannelPlan_AS923::LogRxWindow(uint8_t wnd) {
     logTrace("RX DR: %u SF: %u BW: %u CR: %u PL: %u STO: %u CRC: %d IQ: %d", rxDr.Index, sf, bw, cr, pl, sto, crc, iq);
 }
 
-uint8_t ChannelPlan_AS923::GetMaxPayloadSize() {
-    if (GetSettings()->Session.UplinkDwelltime == 1) {
+uint8_t ChannelPlan_AS923::GetMaxPayloadSize(uint8_t dr, Direction dir) {
+    if (GetSettings()->Session.UplinkDwelltime == 1 && dir == DIR_UP) {
         if (GetSettings()->Network.RepeaterMode)
-            return AS923_MAX_PAYLOAD_SIZE_REPEATER_400[GetSettings()->Session.TxDatarate];
+            return AS923_MAX_PAYLOAD_SIZE_REPEATER_400[dr];
         else
-            return AS923_MAX_PAYLOAD_SIZE_400[GetSettings()->Session.TxDatarate];
+            return AS923_MAX_PAYLOAD_SIZE_400[dr];
     } else {
         if (GetSettings()->Network.RepeaterMode)
-            return MAX_PAYLOAD_SIZE_REPEATER[GetSettings()->Session.TxDatarate];
+            return MAX_PAYLOAD_SIZE_REPEATER[dr];
         else
-            return MAX_PAYLOAD_SIZE[GetSettings()->Session.TxDatarate];
+            return MAX_PAYLOAD_SIZE[dr];
     }
+
+    return 0;
 }
 
 RxWindow ChannelPlan_AS923::GetRxWindow(uint8_t window, int8_t id) {
