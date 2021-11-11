@@ -1483,9 +1483,13 @@ uint8_t ChannelPlan_GLOBAL::HandleAdrCommand(const uint8_t* payload, uint8_t ind
             if (datarate != 0xF)
                 GetSettings()->Session.TxDatarate = datarate;
 
-            if (IsPlanAS923()) {
-                if (power != 0xF)
-                    GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP - (power * 2);
+            if (_plan == AU915 || IsPlanAS923()) {
+                if (power != 0xF) {
+                    if (GetSettings()->Session.Max_EIRP > (power * 2))
+                        GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP - (power * 2);
+                    else
+                        GetSettings()->Session.TxPower = 0;
+                }
             } else {
                 if (power != 0xF)
                     GetSettings()->Session.TxPower = TX_POWERS[power];
@@ -2006,7 +2010,14 @@ uint8_t ChannelPlan_GLOBAL::HandleMacCommand(uint8_t* payload, uint8_t& index) {
 
                 if (_plan == AU915)
                     GetSettings()->Session.Max_EIRP = AU915_MAX_ERP_VALUES[(eirp_dwell & 0x0F)];
-                else if (_plan )
+                else
+                    GetSettings()->Session.Max_EIRP = AS923_MAX_ERP_VALUES[(eirp_dwell & 0x0F)];
+
+
+                if (GetSettings()->Session.TxPower > GetSettings()->Session.Max_EIRP) {
+                    GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
+                }
+
                 logDebug("buffer index %d", GetSettings()->Session.CommandBufferIndex);
                 if (GetSettings()->Session.CommandBufferIndex < std::min<int>(GetMaxPayloadSize(), COMMANDS_BUFFER_SIZE)) {
                     logDebug("Add tx param setup mac cmd to buffer");

@@ -609,8 +609,12 @@ uint8_t ChannelPlan_AS923::HandleAdrCommand(const uint8_t* payload, uint8_t inde
         if (status == 0x07) {
             if (datarate != 0xF)
                 GetSettings()->Session.TxDatarate = datarate;
-            if (power != 0xF)
-                GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP - (power * 2);
+            if (power != 0xF) {
+                if (GetSettings()->Session.Max_EIRP > (power * 2))
+                    GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP - (power * 2);
+                else
+                    GetSettings()->Session.TxPower = 0;
+            }
             GetSettings()->Session.Redundancy = nbRep;
         }
     } else {
@@ -1004,6 +1008,11 @@ uint8_t ChannelPlan_AS923::HandleMacCommand(uint8_t* payload, uint8_t& index) {
 
             GetSettings()->Session.Max_EIRP = MAX_ERP_VALUES[(eirp_dwell & 0x0F)];
             logDebug("buffer index %d", GetSettings()->Session.CommandBufferIndex);
+
+            if (GetSettings()->Session.TxPower > GetSettings()->Session.Max_EIRP) {
+                GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
+            }
+
             if (GetSettings()->Session.CommandBufferIndex < std::min<int>(GetMaxPayloadSize(), COMMANDS_BUFFER_SIZE)) {
                 logDebug("Add tx param setup mac cmd to buffer");
                 GetSettings()->Session.CommandBuffer[GetSettings()->Session.CommandBufferIndex++] = MOTE_MAC_TX_PARAM_SETUP_ANS;
