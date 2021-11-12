@@ -397,7 +397,7 @@ _plan = AU915;
 
     Datarate dr;
 
-    _maxTxPower = 30;
+    _maxTxPower = 36;
     _minTxPower = 0;
 
     _minFrequency = AU915_FREQ_MIN;
