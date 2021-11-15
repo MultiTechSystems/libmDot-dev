@@ -1372,9 +1372,9 @@ uint8_t ChannelPlan_GLOBAL::HandleAdrCommand(const uint8_t* payload, uint8_t ind
         case AU915:
         {
             //
-            // Remark MaxTxPower = 0 and MinTxPower = 10
+            // Remark MaxTxPower = 0 and MinTxPower = 14
             //
-            if (power != 0xF && power > 10) {
+            if (power != 0xF && power > 14) {
                 status &= 0xFB; // TxPower KO
             }
         }
