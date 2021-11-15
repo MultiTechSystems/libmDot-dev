@@ -533,7 +533,7 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     band.Index = 0;
     band.FrequencyMin = _minFrequency;
     band.FrequencyMax = _maxFrequency;
-    band.PowerMax = 14;
+    band.PowerMax = 36;
     band.TimeOffEnd = 0;
 
     // Disable duty-cycle limits
@@ -1740,8 +1740,9 @@ uint8_t ChannelPlan_GLOBAL::GetNextChannel()
                 return LORA_NO_CHANS_ENABLED;
             }
         }
-
-        _dutyBands[0].PowerMax = 26;
+        if (IsPlanFixed()) {
+            _dutyBands[0].PowerMax = 26;
+        }
         GetRadio()->SetChannel(GetSettings()->Network.TxFrequency);
         return LORA_OK;
     }
