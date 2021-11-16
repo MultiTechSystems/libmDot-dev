@@ -117,8 +117,7 @@ void ChannelPlan_AS923::Init() {
     GetSettings()->Session.PingSlotFrequency = AS923_BEACON_FREQ + AS923_FREQ_OFFSET_HZ;
     GetSettings()->Session.PingSlotDatarateIndex = AS923_BEACON_DR;
     GetSettings()->Session.PingSlotFreqHop = false;
-
-    GetSettings()->Session.Max_EIRP  = 16;
+    GetSettings()->Session.Max_EIRP = 16;
 
     logInfo("Initialize datarates...");
 

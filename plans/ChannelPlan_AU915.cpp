@@ -96,6 +96,7 @@ void ChannelPlan_AU915::Init() {
     GetSettings()->Session.PingSlotFrequency = AU915_BEACON_FREQ_BASE;
     GetSettings()->Session.PingSlotDatarateIndex = AU915_BEACON_DR;
     GetSettings()->Session.PingSlotFreqHop = true;
+    GetSettings()->Session.Max_EIRP = 16;
 
     _minDatarate = lora::DR_2;
     _maxDatarate = AU915_MAX_DATARATE;

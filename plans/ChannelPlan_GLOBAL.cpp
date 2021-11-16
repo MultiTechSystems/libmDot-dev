@@ -425,6 +425,7 @@ _plan = AU915;
     GetSettings()->Session.PingSlotFrequency = AU915_BEACON_FREQ_BASE;
     GetSettings()->Session.PingSlotDatarateIndex = AU915_BEACON_DR;
     GetSettings()->Session.PingSlotFreqHop = true;
+    GetSettings()->Session.Max_EIRP = 16;
 
     _minDatarate = lora::DR_2;
     _maxDatarate = AU915_MAX_DATARATE;
@@ -528,7 +529,7 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     _numDefaultChans = AS923_DEFAULT_NUM_CHANS;
 
     GetSettings()->Session.UplinkDwelltime = 1;
-    GetSettings()->Session.Max_EIRP  = 16;
+    GetSettings()->Session.Max_EIRP = 16;
 
     band.Index = 0;
     band.FrequencyMin = _minFrequency;
