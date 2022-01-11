@@ -645,6 +645,8 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     GetSettings()->Session.Rx2Frequency = AS923_RX2_FREQ + _as923_freq_offset;
     GetSettings()->Session.Rx2DatarateIndex = DR_2;
 
+    _beaconSize = sizeof(BCNPayload_AS923);
+
     GetSettings()->Session.BeaconFrequency = AS923_BEACON_FREQ + _as923_freq_offset;
     GetSettings()->Session.BeaconFreqHop = false;
     GetSettings()->Session.PingSlotFrequency = AS923_BEACON_FREQ + _as923_freq_offset;
@@ -766,7 +768,7 @@ uint8_t ChannelPlan_GLOBAL::HandleJoinAccept(const uint8_t* buffer, uint8_t size
         }
     } else if (IsPlanDynamic() && size > 17 && buffer[28] == 0x00) {
         Channel ch;
-        int index = 3;
+        int index = _numDefaultChans;
         for (int i = 13; i < size - 5; i += 3) {
 
             ch.Frequency = ((buffer[i]) | (buffer[i + 1] << 8) | (buffer[i + 2] << 16)) * 100u;
@@ -1171,11 +1173,11 @@ uint8_t ChannelPlan_GLOBAL::HandleNewChannel(const uint8_t* payload, uint8_t ind
         if (chParam.DrRange.Fields.Min > chParam.DrRange.Fields.Max && chParam.Frequency != 0) {
             logError("New Channel datarate min/max KO");
             status &= 0xFD; // Datarate range KO
-        } else if ((chParam.DrRange.Fields.Min < _minDatarate || chParam.DrRange.Fields.Min > _maxDatarate) &&
+        } else if ((chParam.DrRange.Fields.Min > _maxDatarate) &&
                 chParam.Frequency != 0) {
             logError("New Channel datarate min KO");
             status &= 0xFD; // Datarate range KO
-        } else if ((chParam.DrRange.Fields.Max < _minDatarate || chParam.DrRange.Fields.Max > _maxDatarate) &&
+        } else if ((chParam.DrRange.Fields.Max > _maxDatarate) &&
                 chParam.Frequency != 0) {
             logError("New Channel datarate max KO");
             status &= 0xFD; // Datarate range KO

@@ -430,11 +430,11 @@ uint8_t ChannelPlan_IN865::HandleNewChannel(const uint8_t* payload, uint8_t inde
     if (chParam.DrRange.Fields.Min > chParam.DrRange.Fields.Max && chParam.Frequency != 0) {
         logError("New Channel datarate min/max KO");
         status &= 0xFD; // Datarate range KO
-    } else if ((chParam.DrRange.Fields.Min < _minDatarate || chParam.DrRange.Fields.Min > _maxDatarate) &&
+    } else if ((chParam.DrRange.Fields.Min > _maxDatarate) &&
                chParam.Frequency != 0) {
         logError("New Channel datarate min KO");
         status &= 0xFD; // Datarate range KO
-    } else if ((chParam.DrRange.Fields.Max < _minDatarate || chParam.DrRange.Fields.Max > _maxDatarate) &&
+    } else if ((chParam.DrRange.Fields.Max > _maxDatarate) &&
                chParam.Frequency != 0) {
         logError("New Channel datarate max KO");
         status &= 0xFD; // Datarate range KO
