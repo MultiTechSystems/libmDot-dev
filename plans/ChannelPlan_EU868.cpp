@@ -865,10 +865,10 @@ uint8_t ChannelPlan_EU868::GetNextChannel()
 
 uint8_t lora::ChannelPlan_EU868::GetJoinDatarate() {
     uint8_t dr = GetSettings()->Session.TxDatarate;
-    static uint8_t cnt = 1;
+    int8_t cnt = GetSettings()->Network.DevNonce % 20;
 
     if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
-        if ((cnt++ % 20) == 0) {
+        if ((cnt % 20) == 0) {
             dr = lora::DR_0;
         } else if ((cnt % 16) == 0) {
             dr = lora::DR_1;
@@ -890,21 +890,25 @@ uint8_t ChannelPlan_EU868::CalculateJoinBackoff(uint8_t size) {
 
     time_t now = time(NULL);
     uint32_t time_on_max = 0;
-    static uint32_t time_off_max = 15;
+    uint32_t time_off_max = 15;
     uint32_t rand_time_off = 0;
-
-    // TODO: calc time-off-max based on RTC time from JoinFirstAttempt, time-off-max is lost over sleep
+    uint8_t join_cnt = 0;
 
     if ((time_t)GetSettings()->Session.JoinTimeOffEnd > now) {
         return LORA_JOIN_BACKOFF;
     }
 
+    if (GetSettings()->Session.JoinFirstAttempt > 0) {
+        // Time since first join / 10  so after 600s max is 60s and after 3600s (1hr) max is 360s (6min) up to 60min
+        time_off_max = (now - GetSettings()->Session.JoinFirstAttempt) / 10;
+        time_off_max = std::min < uint32_t > (time_off_max, 60 * 60);
+    }
+
     uint32_t secs_since_first_attempt = (now - GetSettings()->Session.JoinFirstAttempt);
     uint16_t hours_since_first_attempt = secs_since_first_attempt / (60 * 60);
 
-    static uint8_t join_cnt = 0;
-
-    join_cnt = (join_cnt+1) % 8;
+    // Allow 8 attempts before backoff
+    join_cnt = (GetSettings()->Network.DevNonce) % 8;
 
     if (GetSettings()->Session.JoinFirstAttempt == 0) {
         /* 1 % duty-cycle for first hour
@@ -916,9 +920,7 @@ uint8_t ChannelPlan_EU868::CalculateJoinBackoff(uint8_t size) {
     } else if (join_cnt == 0) {
         if (hours_since_first_attempt < 1) {
             time_on_max = 36000;
-            rand_time_off = rand_r(time_off_max - 1, time_off_max + 1);
-            // time off max 1 hour
-            time_off_max = std::min < uint32_t > (time_off_max * 2, 60 * 60);
+            rand_time_off = rand_r(time_off_max / 2, time_off_max);
 
             if (GetSettings()->Session.JoinTimeOnAir < time_on_max) {
                 GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
@@ -932,9 +934,7 @@ uint8_t ChannelPlan_EU868::CalculateJoinBackoff(uint8_t size) {
                 GetSettings()->Session.JoinTimeOnAir = 36000;
             }
             time_on_max = 72000;
-            rand_time_off = rand_r(time_off_max - 1, time_off_max + 1);
-            // time off max 1 hour
-            time_off_max = std::min < uint32_t > (time_off_max * 2, 60 * 60);
+            rand_time_off = rand_r(time_off_max / 2, time_off_max);
 
             if (GetSettings()->Session.JoinTimeOnAir < time_on_max) {
                 GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
@@ -950,8 +950,7 @@ uint8_t ChannelPlan_EU868::CalculateJoinBackoff(uint8_t size) {
             uint32_t join_time = 1200;
 
             time_on_max = 80700;
-            time_off_max = 1 * 60 * 60; // 1 hour
-            rand_time_off = rand_r(time_off_max - 1, time_off_max + 1);
+            rand_time_off = rand_r(time_off_max / 2, time_off_max);
 
             // allow one final join attempt as long as it doesn't start past the max time on air
             if (GetSettings()->Session.JoinTimeOnAir < time_on_max - join_time) {

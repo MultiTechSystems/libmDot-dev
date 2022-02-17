@@ -1521,15 +1521,21 @@ uint8_t ChannelPlan_GLOBAL::ValidateAdrConfiguration() {
             logWarning("ADR Datarate KO - outside allowed range");
             status &= 0xFD; // Datarate KO
         }
-        if (power < _minTxPower || power > _maxTxPower) {
-            logWarning("ADR TX Power KO - outside allowed range");
-            status &= 0xFB; // TxPower KO
-        }
 
         if (IsPlanAS923() || _plan == AU915) {
+            if (power < _minTxPower || power > GetSettings()->Session.Max_EIRP) {
+                logWarning("ADR TX Power KO - outside allowed range");
+                status &= 0xFB; // TxPower KO
+            }
+
             if (GetSettings()->Session.UplinkDwelltime != 0 && datarate < DR_2) {
                 logWarning("ADR Datarate KO - TxDwelltime != 0 and DR < 2");
                 status &= 0xFD; // Datarate KO
+            }
+        } else {
+            if (power < _minTxPower || power > _maxTxPower) {
+                logWarning("ADR TX Power KO - outside allowed range");
+                status &= 0xFB; // TxPower KO
             }
         }
     }
@@ -1838,25 +1844,27 @@ uint8_t lora::ChannelPlan_GLOBAL::GetJoinDatarate() {
     uint8_t dr = GetSettings()->Session.TxDatarate;
 
     if (IsPlanFixed()) {
-        static uint8_t fsb = 1;
-        static uint8_t dr4_fsb = 1;
-        static bool altdr = false;
+        uint8_t fsb = 1;
+        uint8_t dr4_fsb = 1;
+        bool altdr = false;
+
+        altdr = (GetSettings()->Network.DevNonce % 2) == 0;
+
+        if ((GetSettings()->Network.DevNonce % 9) == 0) {
+            dr4_fsb = GetSettings()->Network.DevNonce / 9;
+            fsb = 9;
+        } else {
+            fsb = (GetSettings()->Network.DevNonce % 9);
+        }
 
         if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
             if (GetSettings()->Network.FrequencySubBand == 0) {
                 if (fsb < 9) {
                     SetFrequencySubBand(fsb);
-                    logDebug("JoinDatarate setting frequency sub band to %d",fsb);
-                    fsb++;
-                    dr = lora::DR_0;
                     dr = (_plan == US915 ? lora::DR_0 : lora::DR_2); // US or AU
                 } else {
-                    dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
-                    fsb = 1;
-                    dr4_fsb++;
-                    if(dr4_fsb > 8)
-                        dr4_fsb = 1;
                     SetFrequencySubBand(dr4_fsb);
+                    dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
                 }
             } else if (altdr && CountBits(_channelMask[4] > 0)) {
                 dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
@@ -1865,11 +1873,12 @@ uint8_t lora::ChannelPlan_GLOBAL::GetJoinDatarate() {
             }
             altdr = !altdr;
         }
+
     } else {
-        static uint8_t cnt = 1;
+        uint8_t cnt = GetSettings()->Network.DevNonce % 20;
 
         if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
-            if (!IsPlanAS923() && (cnt++ % 20) == 0) {
+            if (!IsPlanAS923() && (cnt % 20) == 0) {
                 dr = lora::DR_0;
             } else if (!IsPlanAS923() && (cnt % 16) == 0) {
                 dr = lora::DR_1;
@@ -1884,6 +1893,7 @@ uint8_t lora::ChannelPlan_GLOBAL::GetJoinDatarate() {
             }
         }
     }
+
     return dr;
 }
 
@@ -1895,19 +1905,23 @@ uint8_t lora::ChannelPlan_GLOBAL::CalculateJoinBackoff(uint8_t size) {
     uint32_t rand_time_off = 0;
     static uint16_t join_cnt = 0;
 
-    // TODO: calc time-off-max based on RTC time from JoinFirstAttempt, time-off-max is lost over sleep
-
     if ((time_t)GetSettings()->Session.JoinTimeOffEnd > now) {
         return LORA_JOIN_BACKOFF;
+    }
+
+    if (GetSettings()->Session.JoinFirstAttempt > 0) {
+        // Time since first join / 10  so after 600s max is 60s and after 3600s (1hr) max is 360s (6min) up to 60min
+        time_off_max = (now - GetSettings()->Session.JoinFirstAttempt) / 10;
+        time_off_max = std::min < uint32_t > (time_off_max, 60 * 60);
     }
 
     uint32_t secs_since_first_attempt = (now - GetSettings()->Session.JoinFirstAttempt);
     uint16_t hours_since_first_attempt = secs_since_first_attempt / (60 * 60);
 
     if (IsPlanFixed()) {
-        join_cnt = (join_cnt+1) % 16;
+        join_cnt = (GetSettings()->Network.DevNonce) % 16;
     } else {
-        join_cnt = (join_cnt+1) % 8;
+        join_cnt = (GetSettings()->Network.DevNonce) % 8;
     }
 
     if (GetSettings()->Session.JoinFirstAttempt == 0) {
@@ -1920,9 +1934,7 @@ uint8_t lora::ChannelPlan_GLOBAL::CalculateJoinBackoff(uint8_t size) {
     } else if (join_cnt == 0) {
         if (hours_since_first_attempt < 1) {
             time_on_max = 36000;
-            rand_time_off = rand_r(time_off_max / 2, time_off_max + 1);
-            // time off max 1 hour
-            time_off_max = std::min < uint32_t > (time_off_max * 2, 60 * 60);
+            rand_time_off = rand_r(time_off_max / 2, time_off_max);
 
             if (GetSettings()->Session.JoinTimeOnAir < time_on_max) {
                 GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
@@ -1936,9 +1948,7 @@ uint8_t lora::ChannelPlan_GLOBAL::CalculateJoinBackoff(uint8_t size) {
                 GetSettings()->Session.JoinTimeOnAir = 36000;
             }
             time_on_max = 72000;
-            rand_time_off = rand_r(time_off_max / 2, time_off_max + 1);
-            // time off max 1 hour
-            time_off_max = std::min < uint32_t > (time_off_max * 2, 60 * 60);
+            rand_time_off = rand_r(time_off_max / 2, time_off_max);
 
             if (GetSettings()->Session.JoinTimeOnAir < time_on_max) {
                 GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
@@ -1961,7 +1971,6 @@ uint8_t lora::ChannelPlan_GLOBAL::CalculateJoinBackoff(uint8_t size) {
             }
 
             time_on_max = 80700;
-            time_off_max = 1 * 60 * 60; // 1 hour
             rand_time_off = rand_r(time_off_max / 2, time_off_max);
 
             if (GetSettings()->Session.JoinTimeOnAir < time_on_max - join_time) {
