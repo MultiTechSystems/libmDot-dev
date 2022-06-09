@@ -16,14 +16,32 @@
         "lora-app-layer-stack-size": {
             "macro_name": "LORA_APP_LAYER_STACK_SIZE",
             "value": 2048
+        },
+        "lora-settings-size": {
+            "macro_name": "LORA_SETTINGS_SIZE",
+            "value": 2048
+        },
+        "lora-storage-size": {
+            "macro_name": "LORA_STORAGE_SIZE",
+            "value": 4096
+        },
+        "wake-pin": {
+            "macro_name": "WAKE_PIN",
+            "value": "WAKE"
         }
     },
     "target_overrides": {
+        "MTS_MDOT_F411RE": {
+            "mdot-library.wake-pin": "XBEE_SLEEPRQ"
+        },
         "XDOT_L151CC": {
             "main-stack-size": 2560,
             "thread-stack-size": 256,
             "lora-app-layer-stack-size": 1280,
             "lora-radio-stack-size": 1280
+        },
+        "MAX32660EVSYS": {
+            "thread-stack-size": 2048
         }
     }
 }

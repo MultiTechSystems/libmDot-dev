@@ -329,7 +329,7 @@ uint8_t ChannelPlan_US915::SetFrequencySubBand(uint8_t sub_band) {
 
     _txFrequencySubBand = sub_band;
 
-    if (sub_band > 0) {
+    if (sub_band > 0 && sub_band < 9) {
         SetChannelMask(0, 0x0000);
         SetChannelMask(1, 0x0000);
         SetChannelMask(2, 0x0000);
@@ -351,6 +351,7 @@ uint8_t ChannelPlan_US915::SetFrequencySubBand(uint8_t sub_band) {
 
 void ChannelPlan_US915::LogRxWindow(uint8_t wnd) {
 
+#if defined(MTS_DEBUG)
     RxWindow rxw = GetRxWindow(wnd);
     Datarate rxDr = GetDatarate(rxw.DatarateIndex);
     uint8_t bw = rxDr.Bandwidth;
@@ -363,6 +364,8 @@ void ChannelPlan_US915::LogRxWindow(uint8_t wnd) {
 
     logTrace("RX%d on freq: %lu", wnd, rxw.Frequency);
     logTrace("RX DR: %u SF: %u BW: %u CR: %u PL: %u STO: %u CRC: %d IQ: %d", rxDr.Index, sf, bw, cr, pl, sto, crc, iq);
+#endif
+
 }
 
 RxWindow ChannelPlan_US915::GetRxWindow(uint8_t window, int8_t id) {
@@ -708,7 +711,7 @@ uint8_t ChannelPlan_US915::ValidateAdrConfiguration() {
 uint32_t ChannelPlan_US915::GetTimeOffAir()
 {
     uint32_t min = 0;
-    uint32_t now = _dutyCycleTimer.read_ms();
+    auto now = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
     if (GetSettings()->Session.AggregatedTimeOffEnd > 0 && GetSettings()->Session.AggregatedTimeOffEnd > now) {
         min = std::max < uint32_t > (min, GetSettings()->Session.AggregatedTimeOffEnd - now);
@@ -815,7 +818,7 @@ uint8_t ChannelPlan_US915::GetNextChannel()
 // Search how many channels are enabled
     DatarateRange range;
     uint8_t dr_index = GetSettings()->Session.TxDatarate;
-    uint32_t now = _dutyCycleTimer.read_ms();
+    auto now = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
     for (size_t i = 0; i < _dutyBands.size(); i++) {
         if (_dutyBands[i].TimeOffEnd < now || GetSettings()->Test.DisableDutyCycle == lora::ON) {
@@ -861,8 +864,10 @@ uint8_t ChannelPlan_US915::GetNextChannel()
         int16_t timeout = 10000;
         Timer tmr;
         tmr.start();
+        auto tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
-        for (uint8_t j = rand_r(0, nbEnabledChannels - 1); tmr.read_ms() < timeout; j++) {
+        for (uint8_t j = rand_r(0, nbEnabledChannels - 1); tm_ms < timeout; j++) {
+            tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
             freq = GetChannel(enabledChannels[j]).Frequency;
 
             if (GetRadio()->IsChannelFree(SxRadio::MODEM_LORA, freq, thres)) {
@@ -944,7 +949,11 @@ uint8_t lora::ChannelPlan_US915::CalculateJoinBackoff(uint8_t size) {
     uint32_t secs_since_first_attempt = (now - GetSettings()->Session.JoinFirstAttempt);
     uint16_t hours_since_first_attempt = secs_since_first_attempt / (60 * 60);
 
-    join_cnt = (GetSettings()->Network.DevNonce) % 16;
+    if (IsPlanFixed() && GetFrequencySubBand() == 0) {
+        join_cnt = (GetSettings()->Network.DevNonce) % 16;
+    } else {
+        join_cnt = (GetSettings()->Network.DevNonce) % 8;
+    }
 
     if (GetSettings()->Session.JoinFirstAttempt == 0) {
         /* 1 % duty-cycle for first hour
