@@ -38,10 +38,19 @@
 
 #include "FlashRecordStore.h"
 
-class mDotEvent;
-class LoRaConfig;
 
+#if defined(TARGET_MTS_MDOT_F411RE) || defined(TARGET_XDOT_L151CC)
+#define USE_NVM_CONFIG
+#define USE_RTC_BACKUP
+class LoRaConfig;
 mbed::BlockDevice * mdot_override_external_block_device();
+
+#else
+#define USE_RAM_CONFIG
+class LoRaConfigRAM;
+#endif
+
+class mDotEvent;
 
 class mDot {
         friend class mDotEvent;
@@ -66,19 +75,24 @@ class mDot {
         mDot(const mDot&);
         mDot& operator=(const mDot&);
 
+#if defined(USE_NVM_CONFIG)
         uint32_t RTC_ReadBackupRegister(uint32_t RTC_BKP_DR);
         void RTC_WriteBackupRegister(uint32_t RTC_BKP_DR, uint32_t Data);
 
         void RTC_DisableWakeupTimer();
         void RTC_EnableWakeupTimer();
-
+#endif
         void enterStopMode(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM);
         void enterStandbyMode(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM);
 
         static mDot* _instance;
 
         lora::Mote* _mote;
+#if defined(USE_NVM_CONFIG)
         LoRaConfig* _config;
+#else
+        LoRaConfigRAM* _config;
+#endif
         lora::Settings _settings;
         mDotEvent* _events;
 
@@ -192,6 +206,7 @@ class mDot {
             WAKE_TRIGGER_FALL
         };
 
+#if defined(TARGET_MTS_MDOT_F411RE) || defined(TARGET_XDOT_L151CC)
         enum UserBackupRegs {
             UBR0,
             UBR1,
@@ -218,6 +233,8 @@ class mDot {
             UBR21
 #endif /* TARGET_XDOT_L151CC */
         };
+#endif /* TARGET_MTS_MDOT_F411RE) || TARGET_XDOT_L151CC */
+
 
 #if defined(TARGET_MTS_MDOT_F411RE)
         typedef struct {
@@ -272,7 +289,7 @@ class mDot {
 
 #if defined(TARGET_MTS_MDOT_F411RE)
         uint32_t UserRegisters[10];
-#else
+#elif defined(TARGET_XDOT_L151CC)
         uint32_t UserRegisters[22];
 #endif /* TARGET_MTS_MDOT_F411RE */
 
@@ -1270,6 +1287,16 @@ class mDot {
 
         /**
          *
+         * get/set fota enabled
+         *
+         * true == FOTA is on
+         * set function returns MDOT_OK if success
+         */
+        int32_t setFota(const bool& on);
+        bool getFota();
+
+        /**
+         *
          * get/set adaptive data rate
          * configure data rates and power levels based on signal to noise of packets received at gateway
          * true == adaptive data rate is on
@@ -1486,6 +1513,8 @@ class mDot {
          */
         uint8_t getWakePinTrigger();
 
+
+#if defined(USE_NVM_CONFIG)
         /**
          * Write data in a user backup register
          * @param register one of UBR0 through UBR9 for MDOT, one of UBR0 through UBR21 for XDOT
@@ -1501,6 +1530,7 @@ class mDot {
          * @returns true if success
          */
         bool readUserBackupRegister(uint32_t reg, uint32_t& data);
+#endif
 
         /**
          * Set LBT time in us
@@ -1640,20 +1670,20 @@ class mDot {
 
         bool repairFlashFileSystem();
 
-        /** 
+        /**
          * Write Device EUI, Network ID, Netowrk Key, and Gen App Key to OTP.
          * @return Number of write remaining if positive. A negative number
          * indicates an error.
          */
         int writeOtp();
 
-        /** 
+        /**
          * Verify the data in OTP matches current values.
          * @param commits the number of remaining commits if not NULL
          * @return True if data matches.
          */
         bool verifyOtp(int* commits);
-#else
+#elif defined(TARGET_XDOT_L151CC)
         ///////////////////////////////////////////////////////////////
         // EEPROM (Non Volatile Memory) Operation Functions for xDot //
         ///////////////////////////////////////////////////////////////
@@ -1731,7 +1761,7 @@ class mDot {
         int32_t setRxDataRate(const uint8_t& dr);
         uint8_t getRxDataRate();
 
-        
+
         // set/get duty cycle
         int32_t setDutyCycle(uint8_t dc);
         uint8_t getDutyCycle();
@@ -1811,6 +1841,19 @@ class mDot {
         uint8_t getDisableDutyCycle();
 
         /**
+         * Disable Auto Join Datarate cycle
+         * enables or disables automatic datarate cycling for device joins. TxDatarate setting will be used.
+         * @param val true to disable using automatic join datarate (default:false)
+         */
+        int32_t setDisableAutoJoinDatarate(bool val);
+
+        /**
+         * Disable Auto Join Datarate
+         * @return true if automatic join datarate is disabled (default:false)
+         */
+        uint8_t getDisableAutoJoinDatarate();
+
+        /**
          * LBT RSSI
          * @return the current RSSI on the configured frequency (SetTxFrequency) using configured LBT Time
          */
@@ -1823,13 +1866,18 @@ class mDot {
         void closeRxWindow();
         void sendContinuous(bool enable=true, uint32_t timeout=0, uint32_t frequency=0, int8_t txpower=-1);
         int32_t setDeviceId(const std::vector<uint8_t>& id);
+
+#if defined(USE_NVM_CONFIG)
         int32_t setProtectedAppEUI(const std::vector<uint8_t>& appEUI);
         int32_t setProtectedAppKey(const std::vector<uint8_t>& appKey);
         std::vector<uint8_t> getProtectedAppEUI();
         std::vector<uint8_t> getProtectedAppKey();
         int32_t setProtectedGenAppKey(const std::vector<uint8_t>& appKey);
-        int32_t setDefaultFrequencyBand(const uint8_t& band);
         bool saveProtectedConfig();
+#endif
+
+        int32_t setDefaultFrequencyBand(const uint8_t& band);
+
         // resets the radio/mac/link
         void resetRadio();
         int32_t setRadioMode(const uint8_t& mode);
@@ -1876,6 +1924,29 @@ class mDot {
         bool _standbyFlag;
         uint8_t _savedPort;
         lora::ChannelPlan* _plan;
+
+        struct BackupData
+        {
+            uint32_t time_then;
+            uint32_t duty_cycle_1;
+            uint32_t duty_cycle_2;
+            uint32_t duty_cycle_3;
+            uint32_t duty_cycle_4;
+            uint32_t duty_cycle_temp;
+            uint32_t uplink;
+            uint32_t join_first_attempt;
+            uint32_t join_time_on_air;
+            uint32_t tx_data_rate;
+            uint32_t srv_ack;
+        };
+
+        void rtcAlarmDisable();
+        void clearSleepFlags();
+        void enableBackup();
+        void getBackup(BackupData& backup);
+        void setBackup(const BackupData& backup);
+        bool resetFromStandby();
+        void reset();
 };
 
 #endif

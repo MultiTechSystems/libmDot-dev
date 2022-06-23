@@ -306,7 +306,7 @@ uint8_t ChannelPlan_AS923::SetFrequencySubBand(uint8_t sub_band) {
 }
 
 void ChannelPlan_AS923::LogRxWindow(uint8_t wnd) {
-
+#if defined(MTS_DEBUG)
     RxWindow rxw = GetRxWindow(wnd);
     Datarate rxDr = GetDatarate(rxw.DatarateIndex);
     uint8_t bw = rxDr.Bandwidth;
@@ -323,6 +323,7 @@ void ChannelPlan_AS923::LogRxWindow(uint8_t wnd) {
 
     logTrace("RX%d on freq: %lu", wnd, freq);
     logTrace("RX DR: %u SF: %u BW: %u CR: %u PL: %u STO: %u CRC: %d IQ: %d", rxDr.Index, sf, bw, cr, pl, sto, crc, iq);
+#endif
 }
 
 uint8_t ChannelPlan_AS923::GetMaxPayloadSize(uint8_t dr, Direction dir) {
@@ -845,8 +846,10 @@ uint8_t ChannelPlan_AS923::GetNextChannel()
         int16_t timeout = 10000;
         Timer tmr;
         tmr.start();
+        auto tmr_ms = duration_cast<milliseconds>(tmr.elapsed_time()).count();
 
-        for (uint8_t j = rand_r(0, nbEnabledChannels - 1); tmr.read_ms() < timeout; j++) {
+        for (uint8_t j = rand_r(0, nbEnabledChannels - 1); tmr_ms < timeout; j++) {
+            tmr_ms = duration_cast<milliseconds>(tmr.elapsed_time()).count();
             freq = GetChannel(enabledChannels[j]).Frequency;
 
             // Listen before talk

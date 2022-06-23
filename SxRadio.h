@@ -249,6 +249,7 @@ public:
      * \param [IN]: addr Register address
      * \param [IN]: data New register value
      */
+#ifndef SX1262
     virtual void Write( uint8_t addr, uint8_t data ) = 0;
     /*!
      * \brief Reads the radio register at the specified address
@@ -273,7 +274,9 @@ public:
      * \param [IN] size Number of registers to be read
      */
     virtual void ReadBuffer( uint8_t addr, uint8_t *buffer, uint8_t size ) = 0;
-
+#else
+    virtual void SetPublicNetwork( bool enable ) = 0;
+#endif
     virtual void SignalMacEvent(void) {};
     virtual void SignalLinkEvent(void) {};
 
