@@ -279,7 +279,7 @@ uint8_t ChannelPlan_KR920::SetFrequencySubBand(uint8_t sub_band) {
 }
 
 void ChannelPlan_KR920::LogRxWindow(uint8_t wnd) {
-#if defined(MTS_DEBUG)
+
     RxWindow rxw = GetRxWindow(wnd);
     Datarate rxDr = GetDatarate(rxw.DatarateIndex);
     uint8_t bw = rxDr.Bandwidth;
@@ -296,7 +296,6 @@ void ChannelPlan_KR920::LogRxWindow(uint8_t wnd) {
 
     logTrace("RX%d on freq: %lu", wnd, freq);
     logTrace("RX DR: %u SF: %u BW: %u CR: %u PL: %u STO: %u CRC: %d IQ: %d", rxDr.Index, sf, bw, cr, pl, sto, crc, iq);
-#endif
 }
 
 RxWindow ChannelPlan_KR920::GetRxWindow(uint8_t window, int8_t id) {
@@ -603,7 +602,7 @@ uint8_t ChannelPlan_KR920::ValidateAdrConfiguration() {
 uint32_t ChannelPlan_KR920::GetTimeOffAir()
 {
     uint32_t min = 0;
-    auto now = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
+    uint32_t now = _dutyCycleTimer.read_ms();
 
     if (GetSettings()->Test.DisableDutyCycle == lora::OFF) {
         min = UINT_MAX;
@@ -660,10 +659,9 @@ uint32_t ChannelPlan_KR920::GetTimeOffAir()
 void ChannelPlan_KR920::UpdateDutyCycle(uint32_t freq, uint32_t time_on_air_ms) {
 
     _dutyCycleTimer.start();
-    auto now = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
     if (GetSettings()->Session.MaxDutyCycle > 0 && GetSettings()->Session.MaxDutyCycle <= 15) {
-        GetSettings()->Session.AggregatedTimeOffEnd = now + time_on_air_ms * GetSettings()->Session.AggregateDutyCycle;
+        GetSettings()->Session.AggregatedTimeOffEnd = _dutyCycleTimer.read_ms() + time_on_air_ms * GetSettings()->Session.AggregateDutyCycle;
         logDebug("Updated Aggregate DCycle Time-off: %lu DC: %f", GetSettings()->Session.AggregatedTimeOffEnd, 1 / float(GetSettings()->Session.AggregateDutyCycle));
     } else {
         GetSettings()->Session.AggregatedTimeOffEnd = 0;
@@ -671,6 +669,7 @@ void ChannelPlan_KR920::UpdateDutyCycle(uint32_t freq, uint32_t time_on_air_ms) 
 
 
     uint32_t time_off_air = 0;
+    uint32_t now = _dutyCycleTimer.read_ms();
 
     for (size_t i = 0; i < _dutyBands.size(); i++) {
         if (_dutyBands[i].TimeOffEnd < now) {
@@ -757,7 +756,7 @@ uint8_t ChannelPlan_KR920::GetNextChannel()
 // Search how many channels are enabled
     DatarateRange range;
     uint8_t dr_index = GetSettings()->Session.TxDatarate;
-    auto now = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
+    uint32_t now = _dutyCycleTimer.read_ms();
 
     for (size_t i = 0; i < _dutyBands.size(); i++) {
         if (_dutyBands[i].TimeOffEnd < now || GetSettings()->Test.DisableDutyCycle == lora::ON) {
@@ -793,10 +792,8 @@ uint8_t ChannelPlan_KR920::GetNextChannel()
         int16_t timeout = 10000;
         Timer tmr;
         tmr.start();
-        auto tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
-        for (uint8_t j = rand_r(0, nbEnabledChannels - 1); tm_ms < timeout; j++) {
-            tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
+        for (uint8_t j = rand_r(0, nbEnabledChannels - 1); tmr.read_ms() < timeout; j++) {
             freq = GetChannel(enabledChannels[j]).Frequency;
 
             if (GetRadio()->IsChannelFree(SxRadio::MODEM_LORA, freq, thres)) {

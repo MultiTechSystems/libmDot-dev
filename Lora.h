@@ -99,13 +99,9 @@ namespace lora {
     const uint16_t DEFAULT_JOIN_DELAY = PRIVATE_JOIN_DELAY;     //!< Default join delay1
     const uint16_t DEFAULT_RX_DELAY = 1000;                     //!< Default delay for first receive window
     const uint16_t DEFAULT_RX_TIMEOUT = 3000;                   //!< Default timeout for receive windows
-#if defined(TARGET_MAX32660)
-    const uint8_t HI_DR_SYMBOL_TIMEOUT = 30;                    //!< Symbol timeout for receive at datarate with SF < 11
-    const uint8_t LO_DR_SYMBOL_TIMEOUT = 20;                    //!< Symbol timeout for receive at datarate with SF > 10
-#else
+
     const uint8_t HI_DR_SYMBOL_TIMEOUT = 12;                    //!< Symbol timeout for receive at datarate with SF < 11
     const uint8_t LO_DR_SYMBOL_TIMEOUT = 8;                     //!< Symbol timeout for receive at datarate with SF > 10
-#endif
 
     const uint16_t RX2_DELAY_OFFSET = 1000;                     //!< Delay between first and second window
     const uint16_t RXC_OFFSET = 50;                             //!< Time between end of RXC after TX and RX1
@@ -118,7 +114,7 @@ namespace lora {
     const std::chrono::seconds MAX_BEACONLESS_OP_TIME = 7200s;  //!< Maximum time to operate in class B since last beacon received (in seconds)
     const uint16_t MAX_CLASS_B_WINDOW_GROWTH = 3U;              //!< Maximum window growth factor for beacons and ping slots in beacon-less operation
     const uint16_t DEFAULT_PING_NB = 1U;                        //!< Default number of ping slots per beacon interval
-    const uint16_t CLS_B_PAD = 20U;                             //!< Pad added to the beginning of ping slot rx windows (in milliseconds)
+    const uint16_t CLS_B_PAD = 15U;                             //!< Pad added to the beginning of ping slot rx windows (in milliseconds)
     const uint16_t BEACON_PAD = 100U;                           //!< Pad beacon window is expanded (in milliseconds)
 
     const int16_t DEFAULT_FREE_CHAN_RSSI_THRESHOLD = -90;       //!< Threshold for channel activity detection (CAD) dBm
