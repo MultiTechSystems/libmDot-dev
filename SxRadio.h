@@ -249,7 +249,7 @@ public:
      * \param [IN]: addr Register address
      * \param [IN]: data New register value
      */
-#ifndef SX1262
+#if !USE_SX1262
     virtual void Write( uint8_t addr, uint8_t data ) = 0;
     /*!
      * \brief Reads the radio register at the specified address
