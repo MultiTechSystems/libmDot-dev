@@ -275,7 +275,7 @@ public:
      */
     virtual void ReadBuffer( uint8_t addr, uint8_t *buffer, uint8_t size ) = 0;
 #else
-    virtual void SetPublicNetwork( bool enable ) = 0;
+    virtual void SetSyncWord( int mode ) = 0;
 #endif
     virtual void SignalMacEvent(void) {};
     virtual void SignalLinkEvent(void) {};
