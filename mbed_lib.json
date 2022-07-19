@@ -28,6 +28,10 @@
         "wake-pin": {
             "macro_name": "WAKE_PIN",
             "value": "WAKE"
+        },
+        "test-mode-enable": {
+            "macro_name": "TEST_MODE_ENABLE",
+            "value": false
         }
     },
     "target_overrides": {

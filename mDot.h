@@ -1924,6 +1924,10 @@ class mDot {
         bool _standbyFlag;
         uint8_t _savedPort;
         lora::ChannelPlan* _plan;
+#if TEST_MODE_ENABLE
+        void handleTestModePacket();
+        bool _testMode;
+#endif
 
         struct BackupData
         {
