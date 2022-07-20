@@ -22,6 +22,8 @@
 #include "SxRadio.h"
 #include <vector>
 
+using namespace std::chrono;
+
 namespace lora {
 
     class ChannelPlan {

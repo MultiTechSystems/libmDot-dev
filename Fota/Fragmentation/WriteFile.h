@@ -52,7 +52,7 @@ class WriteFile {
 
 #if FLASH_RECORD_STORE_FILE_ENABLE
         mts::FlashFileRecord* _fota_file;
-#else
+#elif defined(TARGET_MTS_MDOT_F411RE)
         int writeWithVerify(uint8_t* buffer, uint32_t size);
         int readWithRetry(int32_t pos, uint8_t* buffer, uint32_t size);
         mDot* _dot;

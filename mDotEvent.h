@@ -279,7 +279,7 @@ class mDotEvent: public lora::MacEvents {
             std::chrono::milliseconds current_server_time_ms =
                 std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::seconds(seconds)) +
                 std::chrono::milliseconds(static_cast<uint16_t>(sub_seconds) * 4) +
-                std::chrono::milliseconds(_timeSinceTx.read_ms());
+                std::chrono::duration_cast<std::chrono::milliseconds>(_timeSinceTx.elapsed_time());
                 // std::chrono::duration_cast<std::chrono::milliseconds>(_timeSinceTx.elapsed_time());
 
             ServerTimeSeconds = static_cast<uint32_t>(current_server_time_ms.count() / 1000);
