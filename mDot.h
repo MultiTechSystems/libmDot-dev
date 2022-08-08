@@ -82,7 +82,7 @@ class mDot {
         void RTC_DisableWakeupTimer();
         void RTC_EnableWakeupTimer();
 #endif
-        void enterStopMode(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM);
+        void enterStopMode(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM, bool stopModeForDeepSleep = false);
         void enterStandbyMode(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM);
 
         static mDot* _instance;
