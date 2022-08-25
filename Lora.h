@@ -488,6 +488,7 @@ namespace lora {
             uint8_t FixedUplinkCounter;
             uint8_t DisableRandomJoinDatarate;
             uint8_t DisableAppNonceValidation;
+            uint8_t DisableADRIncrementDatarate;
     } Testing;
 
     /**

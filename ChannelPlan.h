@@ -18,6 +18,7 @@
 
 #include "mbed_events.h"
 
+#include "RandomChannel.h"
 #include "Lora.h"
 #include "SxRadio.h"
 #include <vector>
@@ -627,13 +628,15 @@ namespace lora {
 
             SxRadio* GetRadio();                //!< Get pointer to the SxRadio object or assert if it is null
             Settings* GetSettings();            //!< Get pointer to the settings object or assert if it is null
-
+            RandomChannel *GetRandomChannel();
         protected:
 
             /**
              * 16 bit ITU-T CRC implementation
              */
             uint16_t CRC16(const uint8_t* data, size_t size);
+
+            RandomChannel _randomChannel;
 
             uint8_t _txChannel;                 //!< Current channel for transmit
             uint8_t _txFrequencySubBand;        //!< Current frequency sub band for hybrid operation
