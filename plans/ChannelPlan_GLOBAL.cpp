@@ -137,7 +137,7 @@ void ChannelPlan_GLOBAL::Init_EU868() {
     _maxDatarate = EU868_MAX_DATARATE;
 
     _minRx2Datarate = DR_0;
-    _maxRx2Datarate = DR_6;
+    _maxRx2Datarate = DR_7;
 
     _minDatarateOffset = EU868_MIN_DATARATE_OFFSET;
     _maxDatarateOffset = EU868_MAX_DATARATE_OFFSET;
@@ -516,10 +516,10 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     MAX_PAYLOAD_SIZE_REPEATER = AS923_MAX_PAYLOAD_SIZE_REPEATER;
 
     _minDatarate = DR_0;
-    _maxDatarate = DR_6;
+    _maxDatarate = DR_7;
 
     _minRx2Datarate = DR_0;
-    _maxRx2Datarate = DR_6;
+    _maxRx2Datarate = DR_7;
 
     _minDatarateOffset = 0;
     _maxDatarateOffset = 7;
@@ -678,7 +678,7 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     AddDatarate(-1, dr);
     dr.Index++;
 
-    _maxDatarate = DR_6;
+    _maxDatarate = DR_7;
 
     // Skip DR8-15 RFU
     dr.SpreadingFactor = SF_INVALID;
@@ -1747,7 +1747,7 @@ void lora::ChannelPlan_GLOBAL::EnableDefaultChannels() {
 uint8_t ChannelPlan_GLOBAL::GetNextChannel()
 {
 	bool error = false;
-	
+
     if (GetSettings()->Session.AggregatedTimeOffEnd != 0) {
         return LORA_AGGREGATED_DUTY_CYCLE;
     }
@@ -1856,17 +1856,17 @@ uint8_t ChannelPlan_GLOBAL::GetNextChannel()
         	error = true;
         }
     }
-    
+
     if(error) {
         logError("Unable to select a random channel");
     }
     else {
         assert(freq != 0);
-	
+
         logDebug("Using channel %d : %d", _txChannel, freq);
         GetRadio()->SetChannel(freq);
     }
-    
+
     delete [] enabledChannels;
     return (error) ? LORA_ERROR : LORA_OK;
 }
