@@ -520,7 +520,7 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     _maxRx2Datarate = DR_5;
 
     _minDatarateOffset = 0;
-    _maxDatarateOffset = 7;
+    _maxDatarateOffset = 5;
 
     _numChans125k = 16;
     _numChans500k = 0;
