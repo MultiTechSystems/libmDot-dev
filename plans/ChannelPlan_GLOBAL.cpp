@@ -1033,7 +1033,7 @@ RxWindow ChannelPlan_GLOBAL::GetRxWindow(uint8_t window, int8_t id) {
                 if (IsPlanAS923()) {
                     if (GetSettings()->Session.Rx1DatarateOffset >= 6) {
                         index =  GetSettings()->Session.TxDatarate + (GetSettings()->Session.Rx1DatarateOffset == 6 ? 1 : 2);
-                        index = std::min<int>(index, _maxDatarate);
+                        index = std::min<int>(index, 7);
                     } else if (GetSettings()->Session.TxDatarate > GetSettings()->Session.Rx1DatarateOffset) {
                         index = GetSettings()->Session.TxDatarate - GetSettings()->Session.Rx1DatarateOffset;
                     } else {
