@@ -137,7 +137,7 @@ void ChannelPlan_GLOBAL::Init_EU868() {
     _maxDatarate = EU868_MAX_DATARATE;
 
     _minRx2Datarate = DR_0;
-    _maxRx2Datarate = DR_7;
+    _maxRx2Datarate = DR_5;
 
     _minDatarateOffset = EU868_MIN_DATARATE_OFFSET;
     _maxDatarateOffset = EU868_MAX_DATARATE_OFFSET;
@@ -182,8 +182,6 @@ void ChannelPlan_GLOBAL::Init_EU868() {
     dr.Coderate = 0;
     AddDatarate(-1, dr);
     dr.Index++;
-
-    _maxDatarate = DR_7;
 
     // Skip DR8-15 RFU
     dr.SpreadingFactor = SF_INVALID;
@@ -516,10 +514,10 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     MAX_PAYLOAD_SIZE_REPEATER = AS923_MAX_PAYLOAD_SIZE_REPEATER;
 
     _minDatarate = DR_0;
-    _maxDatarate = DR_7;
+    _maxDatarate = DR_5;
 
     _minRx2Datarate = DR_0;
-    _maxRx2Datarate = DR_7;
+    _maxRx2Datarate = DR_5;
 
     _minDatarateOffset = 0;
     _maxDatarateOffset = 7;
@@ -677,8 +675,6 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     dr.Coderate = 0;
     AddDatarate(-1, dr);
     dr.Index++;
-
-    _maxDatarate = DR_7;
 
     // Skip DR8-15 RFU
     dr.SpreadingFactor = SF_INVALID;

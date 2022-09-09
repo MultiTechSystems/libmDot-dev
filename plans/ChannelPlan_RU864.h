@@ -40,7 +40,7 @@ namespace lora {
     const uint32_t RU864_FREQ_MAX = 870000000;
 
     const uint8_t RU864_MIN_DATARATE = (uint8_t) DR_0;           //!< Minimum transmit datarate for RU864
-    const uint8_t RU864_MAX_DATARATE = (uint8_t) DR_7;           //!< Maximum transmit datarate for RU864
+    const uint8_t RU864_MAX_DATARATE = (uint8_t) DR_5;           //!< Maximum transmit datarate for RU864
 
     const uint8_t RU864_MIN_DATARATE_OFFSET = (uint8_t) 0;       //!< Minimum transmit datarate for US915
     const uint8_t RU864_MAX_DATARATE_OFFSET = (uint8_t) 5;       //!< Maximum transmit datarate for US915

@@ -75,10 +75,10 @@ void ChannelPlan_IN865::Init() {
     MAX_PAYLOAD_SIZE_REPEATER = IN865_MAX_PAYLOAD_SIZE_REPEATER;
 
     _minDatarate = 0;
-    _maxDatarate = 7;
+    _maxDatarate = 5;
 
     _minRx2Datarate = DR_0;
-    _maxRx2Datarate = DR_7;
+    _maxRx2Datarate = DR_5;
 
     _minDatarateOffset = 0;
     _maxDatarateOffset = 7;

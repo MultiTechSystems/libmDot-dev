@@ -95,10 +95,10 @@ void ChannelPlan_AS923::Init() {
     MAX_PAYLOAD_SIZE_REPEATER = AS923_MAX_PAYLOAD_SIZE_REPEATER;
 
     _minDatarate = 0;
-    _maxDatarate = 7;
+    _maxDatarate = 5;
 
     _minRx2Datarate = DR_0;
-    _maxRx2Datarate = DR_7;
+    _maxRx2Datarate = DR_5;
 
     _minDatarateOffset = 0;
     _maxDatarateOffset = 7;
@@ -144,7 +144,7 @@ void ChannelPlan_AS923::Init() {
     AddDatarate(-1, dr);
     dr.Index++;
 
-    _maxDatarate = DR_7;
+    _maxDatarate = DR_5;
 
     // Skip DR8-15 RFU
     dr.SpreadingFactor = SF_INVALID;

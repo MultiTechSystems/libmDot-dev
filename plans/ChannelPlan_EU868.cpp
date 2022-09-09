@@ -79,7 +79,7 @@ void ChannelPlan_EU868::Init() {
     _maxDatarate = EU868_MAX_DATARATE;
 
     _minRx2Datarate = DR_0;
-    _maxRx2Datarate = DR_7;
+    _maxRx2Datarate = DR_5;
 
     _minDatarateOffset = EU868_MIN_DATARATE_OFFSET;
     _maxDatarateOffset = EU868_MAX_DATARATE_OFFSET;

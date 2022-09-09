@@ -56,7 +56,7 @@ namespace lora {
     const uint32_t EU868_FREQ_MAX = 870000000;
 
     const uint8_t EU868_MIN_DATARATE = (uint8_t) DR_0;           //!< Minimum transmit datarate for EU868
-    const uint8_t EU868_MAX_DATARATE = (uint8_t) DR_7;           //!< Maximum transmit datarate for EU868
+    const uint8_t EU868_MAX_DATARATE = (uint8_t) DR_5;           //!< Maximum transmit datarate for EU868
 
     const uint8_t EU868_MIN_DATARATE_OFFSET = (uint8_t) 0;       //!< Minimum transmit datarate for US915
     const uint8_t EU868_MAX_DATARATE_OFFSET = (uint8_t) 5;       //!< Maximum transmit datarate for US915

@@ -79,7 +79,7 @@ void ChannelPlan_RU864::Init() {
     _maxDatarate = RU864_MAX_DATARATE;
 
     _minRx2Datarate = DR_0;
-    _maxRx2Datarate = DR_7;
+    _maxRx2Datarate = DR_5;
 
     _minDatarateOffset = RU864_MIN_DATARATE_OFFSET;
     _maxDatarateOffset = RU864_MAX_DATARATE_OFFSET;
