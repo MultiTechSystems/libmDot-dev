@@ -436,7 +436,7 @@ uint8_t ChannelPlan_AS923::HandleRxParamSetup(const uint8_t* payload, uint8_t in
 
 #if !defined(ENABLE_LORAWAN_OPTIONAL_DATARATES)
     // LCTT expects this Rx1Offset 6 & 7 to be rejected if TxDR is DR5 or greater
-    if (drOffset >= 6 && (GetSettings()->Session.TxDatarate + (drOffset == 6) ? 1 : 2) > DR_5) {
+    if (drOffset >= 6 && ( (GetSettings()->Session.TxDatarate + ((drOffset == 6) ? 1 : 2)) > DR_5 ) ) { {
         logInfo("DR Offset KO");
         status &= 0xFB; // Rx1DrOffset range KO
     }
