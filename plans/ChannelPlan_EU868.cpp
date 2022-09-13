@@ -75,11 +75,16 @@ void ChannelPlan_EU868::Init() {
     MAX_PAYLOAD_SIZE = EU868_MAX_PAYLOAD_SIZE;
     MAX_PAYLOAD_SIZE_REPEATER = EU868_MAX_PAYLOAD_SIZE_REPEATER;
 
-    _minDatarate = EU868_MIN_DATARATE;
-    _maxDatarate = EU868_MAX_DATARATE;
-
-    _minRx2Datarate = DR_0;
+#if defined(ENABLE_LORAWAN_OPTIONAL_DATARATES)
+    _maxDatarate = DR_7;
+    _maxRx2Datarate = DR_7;
+#else
+    _maxDatarate = DR_5;
     _maxRx2Datarate = DR_5;
+#endif
+
+    _minDatarate = EU868_MIN_DATARATE;
+    _minRx2Datarate = DR_0;
 
     _minDatarateOffset = EU868_MIN_DATARATE_OFFSET;
     _maxDatarateOffset = EU868_MAX_DATARATE_OFFSET;

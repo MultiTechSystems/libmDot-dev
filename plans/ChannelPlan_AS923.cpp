@@ -94,11 +94,16 @@ void ChannelPlan_AS923::Init() {
     MAX_PAYLOAD_SIZE = AS923_MAX_PAYLOAD_SIZE;
     MAX_PAYLOAD_SIZE_REPEATER = AS923_MAX_PAYLOAD_SIZE_REPEATER;
 
-    _minDatarate = 0;
-    _maxDatarate = 5;
-
+    _minDatarate = DR_0;
     _minRx2Datarate = DR_0;
+
+#if defined(ENABLE_LORAWAN_OPTIONAL_DATARATES)
+    _maxRx2Datarate = DR_7;
+    _maxDatarate = DR_7;
+#else
     _maxRx2Datarate = DR_5;
+    _maxDatarate = DR_5;
+#endif
 
     _minDatarateOffset = 0;
     _maxDatarateOffset = 7;
@@ -428,6 +433,14 @@ uint8_t ChannelPlan_AS923::HandleRxParamSetup(const uint8_t* payload, uint8_t in
         logInfo("DR Offset KO");
         status &= 0xFB; // Rx1DrOffset range KO
     }
+
+#if defined(ENABLE_LORAWAN_OPTIONAL_DATARATES)
+    // LCTT expects this Rx1Offset 6 & 7 to be rejected if TxDR is DR5 or greater
+    if (drOffset >= 6 && (GetSettings()->Session.TxDatarate + (drOffset == 6) ? 1 : 2) > DR_5) {
+        logInfo("DR Offset KO");
+        status &= 0xFB; // Rx1DrOffset range KO
+    }
+#endif
 
     if ((status & 0x07) == 0x07) {
         logInfo("RxParamSetup accepted Rx2DR: %d Rx2Freq: %d Rx1Offset: %d", datarate, freq, drOffset);

@@ -134,10 +134,15 @@ void ChannelPlan_GLOBAL::Init_EU868() {
     MAX_PAYLOAD_SIZE_REPEATER = EU868_MAX_PAYLOAD_SIZE_REPEATER;
 
     _minDatarate = EU868_MIN_DATARATE;
-    _maxDatarate = EU868_MAX_DATARATE;
+    _minRx2Datarate = EU868_MIN_DATARATE;
 
-    _minRx2Datarate = DR_0;
+#if defined(ENABLE_LORAWAN_OPTIONAL_DATARATES)
+    _maxDatarate = DR_7;
+    _maxRx2Datarate = DR_7;
+#else
+    _maxDatarate = DR_5;
     _maxRx2Datarate = DR_5;
+#endif
 
     _minDatarateOffset = EU868_MIN_DATARATE_OFFSET;
     _maxDatarateOffset = EU868_MAX_DATARATE_OFFSET;
@@ -514,13 +519,18 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     MAX_PAYLOAD_SIZE_REPEATER = AS923_MAX_PAYLOAD_SIZE_REPEATER;
 
     _minDatarate = DR_0;
-    _maxDatarate = DR_5;
 
     _minRx2Datarate = DR_0;
+#if defined(ENABLE_LORAWAN_OPTIONAL_DATARATES)
+    _maxRx2Datarate = DR_7;
+    _maxDatarate = DR_7;
+#else
     _maxRx2Datarate = DR_5;
+    _maxDatarate = DR_5;
+#endif
 
     _minDatarateOffset = 0;
-    _maxDatarateOffset = 5;
+    _maxDatarateOffset = 7;
 
     _numChans125k = 16;
     _numChans500k = 0;
@@ -1126,6 +1136,14 @@ uint8_t ChannelPlan_GLOBAL::HandleRxParamSetup(const uint8_t* payload, uint8_t i
         logInfo("DR Offset KO");
         status &= 0xFB; // Rx1DrOffset range KO
     }
+
+#if defined(ENABLE_LORAWAN_OPTIONAL_DATARATES)
+    // LCTT expects this Rx1Offset 6 & 7 to be rejected if TxDR is DR5 or greater
+    if ((IsPlanAS923() && (drOffset >= 6 && (GetSettings()->Session.TxDatarate + (drOffset == 6) ? 1 : 2) > DR_5))) {
+        logInfo("DR Offset KO");
+        status &= 0xFB; // Rx1DrOffset range KO
+    }
+#endif
 
     if ((status & 0x07) == 0x07) {
         logInfo("RxParamSetup accepted Rx2DR: %d Rx2Freq: %d Rx1Offset: %d", datarate, freq, drOffset);
