@@ -146,7 +146,7 @@ namespace lora {
 
     const uint8_t FRAME_OVERHEAD = 13;                          //!< Bytes of network info overhead in a frame
 
-    const uint16_t MAX_OFF_AIR_WAIT = 5000U;                    //!< Max time in ms to block for a duty cycle restriction to expire before erroring out
+    const uint16_t MAX_OFF_AIR_WAIT = 10000U;                   //!< Max time in ms to block for a duty cycle restriction to expire before erroring out
 
     const int16_t INVALID_RSSI = 0x7FFF;                        //!< Value used in statistics when RSSI value is unknown
 
