@@ -149,8 +149,6 @@ void ChannelPlan_AS923::Init() {
     AddDatarate(-1, dr);
     dr.Index++;
 
-    _maxDatarate = DR_5;
-
     // Skip DR8-15 RFU
     dr.SpreadingFactor = SF_INVALID;
     while (dr.Index++ <= DR_15) {
