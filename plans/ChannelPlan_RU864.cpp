@@ -871,7 +871,29 @@ uint8_t ChannelPlan_RU864::CalculateJoinBackoff(uint8_t size) {
     uint32_t secs_since_first_attempt = (now - GetSettings()->Session.JoinFirstAttempt);
     uint16_t hours_since_first_attempt = secs_since_first_attempt / (60 * 60);
 
-    join_cnt = (GetSettings()->Network.DevNonce) % 8;
+    logInfo("JoinBackoff: Sec Since: %lu", secs_since_first_attempt);
+    logInfo("JoinBackoff: Hours since: %lu", hours_since_first_attempt);
+
+    if (hours_since_first_attempt < 1) {
+        time_on_max = 36000;
+    } else if (hours_since_first_attempt < 11) {
+        time_on_max = 72000;
+    } else {
+        time_on_max = 80700;
+    }
+
+    rand_time_off = rand_r(time_off_max / 2, time_off_max);
+
+    if (IsPlanFixed() && GetFrequencySubBand() == 0) {
+        join_cnt = (GetSettings()->Network.DevNonce) % 16;
+    } else {
+        join_cnt = (GetSettings()->Network.DevNonce) % 8;
+    }
+
+    if (GetSettings()->Session.JoinTimeOnAir > (time_on_max - GetTimeOnAir(size))) {
+        // is this the last join attempt allowed
+        join_cnt = 0;
+    }
 
     if (GetSettings()->Session.JoinFirstAttempt == 0) {
         /* 1 % duty-cycle for first hour
@@ -882,10 +904,7 @@ uint8_t ChannelPlan_RU864::CalculateJoinBackoff(uint8_t size) {
         GetSettings()->Session.JoinTimeOffEnd = now + (GetTimeOnAir(size) / 10);
     } else if (join_cnt == 0) {
         if (hours_since_first_attempt < 1) {
-            time_on_max = 36000;
-            rand_time_off = rand_r(time_off_max / 2, time_off_max);
-
-            if (GetSettings()->Session.JoinTimeOnAir < time_on_max) {
+            if (GetSettings()->Session.JoinTimeOnAir < time_on_max - GetTimeOnAir(size)) {
                 GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
                 GetSettings()->Session.JoinTimeOffEnd = now + rand_time_off;
             } else {
@@ -896,10 +915,8 @@ uint8_t ChannelPlan_RU864::CalculateJoinBackoff(uint8_t size) {
             if (GetSettings()->Session.JoinTimeOnAir < 36000) {
                 GetSettings()->Session.JoinTimeOnAir = 36000;
             }
-            time_on_max = 72000;
-            rand_time_off = rand_r(time_off_max / 2, time_off_max);
 
-            if (GetSettings()->Session.JoinTimeOnAir < time_on_max) {
+            if (GetSettings()->Session.JoinTimeOnAir < time_on_max - GetTimeOnAir(size)) {
                 GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
                 GetSettings()->Session.JoinTimeOffEnd = now + rand_time_off;
             } else {
@@ -910,13 +927,9 @@ uint8_t ChannelPlan_RU864::CalculateJoinBackoff(uint8_t size) {
             if (GetSettings()->Session.JoinTimeOnAir < 72000) {
                 GetSettings()->Session.JoinTimeOnAir = 72000;
             }
-            uint32_t join_time = 1200;
-
-            time_on_max = 80700;
-            rand_time_off = rand_r(time_off_max / 2, time_off_max);
 
             // allow one final join attempt as long as it doesn't start past the max time on air
-            if (GetSettings()->Session.JoinTimeOnAir < time_on_max - join_time) {
+            if (GetSettings()->Session.JoinTimeOnAir < time_on_max - GetTimeOnAir(size)) {
                 GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
                 GetSettings()->Session.JoinTimeOffEnd = now + rand_time_off;
             } else {
@@ -924,12 +937,12 @@ uint8_t ChannelPlan_RU864::CalculateJoinBackoff(uint8_t size) {
                 // Reset the join time on air and set end of restriction to the next 24 hour period
                 GetSettings()->Session.JoinTimeOnAir = 72000;
                 uint16_t days = (now - GetSettings()->Session.JoinFirstAttempt) / (24 * 60 * 60) + 1;
-                logWarning("days : %d", days);
+                logInfo("JoinBackoff days : %d", days);
                 GetSettings()->Session.JoinTimeOffEnd = GetSettings()->Session.JoinFirstAttempt + ((days * 24) + 11) * 60 * 60;
             }
         }
 
-        logWarning("JoinBackoff: %lu seconds  Time On Air: %lu / %lu", GetSettings()->Session.JoinTimeOffEnd - now, GetSettings()->Session.JoinTimeOnAir, time_on_max);
+        logInfo("JoinBackoff: %lu seconds  Time On Air: %lu / %lu", GetSettings()->Session.JoinTimeOffEnd - now, GetSettings()->Session.JoinTimeOnAir, time_on_max);
     } else {
         GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
         GetSettings()->Session.JoinTimeOffEnd = now + (GetTimeOnAir(size) / 10);

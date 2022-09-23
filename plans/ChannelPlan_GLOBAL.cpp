@@ -1950,10 +1950,8 @@ uint8_t lora::ChannelPlan_GLOBAL::CalculateJoinBackoff(uint8_t size) {
     uint32_t rand_time_off = 0;
     static uint16_t join_cnt = 0;
 
-
-
-    logWarning("JoinBackoff: %lu seconds", GetSettings()->Session.JoinTimeOffEnd - now);
-    logWarning("JoinBackoff: Time On Air: %lu", GetSettings()->Session.JoinTimeOnAir);
+    logInfo("JoinBackoff: %lu seconds", GetSettings()->Session.JoinTimeOffEnd - now);
+    logInfo("JoinBackoff: Time On Air: %lu", GetSettings()->Session.JoinTimeOnAir);
 
     if ((time_t)GetSettings()->Session.JoinTimeOffEnd > now) {
         return LORA_JOIN_BACKOFF;
@@ -1968,8 +1966,8 @@ uint8_t lora::ChannelPlan_GLOBAL::CalculateJoinBackoff(uint8_t size) {
     uint32_t secs_since_first_attempt = (now - GetSettings()->Session.JoinFirstAttempt);
     uint16_t hours_since_first_attempt = secs_since_first_attempt / (60 * 60);
 
-    logWarning("JoinBackoff: Sec Since: %lu", secs_since_first_attempt);
-    logWarning("JoinBackoff: Hours since: %lu", hours_since_first_attempt);
+    logInfo("JoinBackoff: Sec Since: %lu", secs_since_first_attempt);
+    logInfo("JoinBackoff: Hours since: %lu", hours_since_first_attempt);
 
     if (hours_since_first_attempt < 1) {
         time_on_max = 36000;
@@ -2033,28 +2031,25 @@ uint8_t lora::ChannelPlan_GLOBAL::CalculateJoinBackoff(uint8_t size) {
                 // Reset the join time on air and set end of restriction to the next 24 hour period
                 GetSettings()->Session.JoinTimeOnAir = 72000;
                 uint16_t days = (now - GetSettings()->Session.JoinFirstAttempt) / (24 * 60 * 60) + 1;
-                logWarning("days : %d", days);
+                logInfo("JoinBackoff days : %d", days);
                 GetSettings()->Session.JoinTimeOffEnd = GetSettings()->Session.JoinFirstAttempt + ((days * 24) + 11) * 60 * 60;
             }
         }
 
-        logWarning("JoinBackoff: %lu seconds  Time On Air: %lu / %lu", GetSettings()->Session.JoinTimeOffEnd - now, GetSettings()->Session.JoinTimeOnAir, time_on_max);
+        logInfo("JoinBackoff: %lu seconds  Time On Air: %lu / %lu", GetSettings()->Session.JoinTimeOffEnd - now, GetSettings()->Session.JoinTimeOnAir, time_on_max);
     } else {
         if (IsPlanFixed()) {
-            logWarning("FIXED: JoinBackoff TOA: %lu ms", GetTimeOnAir(size));
-            logWarning("FIXED: JoinBackoff TOA total: %lu ms", GetSettings()->Session.JoinTimeOnAir);
-            logWarning("FIXED: JoinBackoff: %lu seconds  Time On Air: %lu / %lu", GetSettings()->Session.JoinTimeOffEnd - now, GetSettings()->Session.JoinTimeOnAir, time_on_max);
+            // logWarning("FIXED: JoinBackoff TOA: %lu ms", GetTimeOnAir(size));
+            // logWarning("FIXED: JoinBackoff TOA total: %lu ms", GetSettings()->Session.JoinTimeOnAir);
+            // logWarning("FIXED: JoinBackoff: %lu seconds  Time On Air: %lu / %lu", GetSettings()->Session.JoinTimeOffEnd - now, GetSettings()->Session.JoinTimeOnAir, time_on_max);
             GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
             GetSettings()->Session.JoinTimeOffEnd = now + rand_r(GetSettings()->Network.JoinDelay + 2, GetSettings()->Network.JoinDelay + 3);
-            logWarning("FIXED: JoinBackoff: %lu seconds  Time On Air: %lu / %lu", GetSettings()->Session.JoinTimeOffEnd - now, GetSettings()->Session.JoinTimeOnAir, time_on_max);
 
         } else {
             GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
             GetSettings()->Session.JoinTimeOffEnd = now + (GetTimeOnAir(size) / 10);
         }
     }
-
-    logWarning("JoinBackoff: %lu seconds  Time On Air: %lu / %lu", GetSettings()->Session.JoinTimeOffEnd - now, GetSettings()->Session.JoinTimeOnAir, time_on_max);
 
     return LORA_OK;
 }
