@@ -75,13 +75,6 @@ class mDot {
         mDot(const mDot&);
         mDot& operator=(const mDot&);
 
-#if defined(USE_NVM_CONFIG)
-        uint32_t RTC_ReadBackupRegister(uint32_t RTC_BKP_DR);
-        void RTC_WriteBackupRegister(uint32_t RTC_BKP_DR, uint32_t Data);
-
-        void RTC_DisableWakeupTimer();
-        void RTC_EnableWakeupTimer();
-#endif
         void enterStopMode(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM, bool stopModeForDeepSleep = false);
         void enterStandbyMode(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM);
 
@@ -111,6 +104,14 @@ class mDot {
         } state;
 
     public:
+
+#if defined(USE_NVM_CONFIG)
+        uint32_t RTC_ReadBackupRegister(uint32_t RTC_BKP_DR);
+        void RTC_WriteBackupRegister(uint32_t RTC_BKP_DR, uint32_t Data);
+
+        void RTC_DisableWakeupTimer();
+        void RTC_EnableWakeupTimer();
+#endif
 
 #if defined(TARGET_MTS_MDOT_F411RE)
         typedef enum {

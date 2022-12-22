@@ -24,6 +24,9 @@
 #include "MulticastGroup.h"
 #include "ApplicationLayerPackage.h"
 
+#define FOTA_MAGIC_VAL 0xF0DAF0DA
+#define FOTA_MAGIC_REG 31
+
 class Fota {
 
     public:
