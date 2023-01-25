@@ -47,6 +47,16 @@ class Fota {
         bool getClockSynced();
         int32_t setClockOffset(uint32_t gps_time);
 
+
+        bool isSendingCRC() {
+        #ifdef FOTA
+            return (_msg.tx.port == APP_PORT_FRAGMENTATION) && (_msg.tx.payload.at(0) == FragmentationSession::CHECKSUM);
+        #else
+            return false;
+        #endif
+        }
+
+
     private:
         static void start();
 
