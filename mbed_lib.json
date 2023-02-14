@@ -3,7 +3,7 @@
     "config": {
         "main-stack-size": {
             "macro_name": "MBED_CONF_APP_MAIN_STACK_SIZE",
-            "value": 4096
+            "value": 16384
         },
         "thread-stack-size": {
             "macro_name": "MBED_CONF_APP_THREAD_STACK_SIZE",
