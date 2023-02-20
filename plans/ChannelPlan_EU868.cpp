@@ -204,6 +204,7 @@ void ChannelPlan_EU868::Init() {
     band.Index++;
     band.FrequencyMin = EU868_VAR_FREQ_MIN;
     band.FrequencyMax = EU868_VAR_FREQ_MAX;
+    band.PowerMax = 16;
     band.DutyCycle = 100;
 
     AddDutyBand(-1, band);
@@ -211,7 +212,17 @@ void ChannelPlan_EU868::Init() {
     band.Index++;
     band.FrequencyMin = EU868_MILLI_1_FREQ_MIN;
     band.FrequencyMax = EU868_MILLI_1_FREQ_MAX;
-    band.PowerMax = 14;
+    band.PowerMax = 16;
+    band.TimeOffEnd = 0;
+    band.DutyCycle = 1000;
+
+    AddDutyBand(-1, band);
+
+    // 863-865 0.1%
+    band.Index++;
+    band.FrequencyMin = EU868_MILLI_0_FREQ_MIN;
+    band.FrequencyMax = EU868_MILLI_0_FREQ_MAX;
+    band.PowerMax = 16;
     band.TimeOffEnd = 0;
     band.DutyCycle = 1000;
 

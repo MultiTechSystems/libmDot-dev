@@ -36,6 +36,9 @@ namespace lora {
     const uint32_t EU868_MILLI_FREQ_MIN = 865000000;
     const uint32_t EU868_MILLI_FREQ_MAX = 868000000;
 
+    const uint32_t EU868_MILLI_0_FREQ_MIN = 863000000;
+    const uint32_t EU868_MILLI_0_FREQ_MAX = 865000000;
+
     const uint32_t EU868_MILLI_1_FREQ_MIN = 868700000;
     const uint32_t EU868_MILLI_1_FREQ_MAX = 869200000;
 
