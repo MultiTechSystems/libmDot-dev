@@ -118,13 +118,6 @@ namespace lora {
             virtual uint8_t GetJoinDatarate();
 
             /**
-             * Calculate the next time a join request is possible
-             * @param size of join frame
-             * @returns LORA_OK
-             */
-            virtual uint8_t CalculateJoinBackoff(uint8_t size);
-
-            /**
              * Set the datarate offset used for first receive window
              * @param offset
              * @return LORA_OK

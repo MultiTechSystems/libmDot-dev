@@ -23,6 +23,12 @@
 #include "SxRadio.h"
 #include <vector>
 
+#if USE_SX1262
+#define RADIO_POWERS_SIZE 22
+#else
+#define RADIO_POWERS_SIZE 20
+#endif
+
 using namespace std::chrono;
 
 namespace lora {
@@ -73,6 +79,10 @@ namespace lora {
 
                 NONE = 0xFF,
             };
+
+            uint32_t u1_hour_max = 36000;
+            uint32_t u10_hour_max = 70000;
+            uint32_t u24_hour_max = 78000;
 
             /**
              * ChannelPlan constructor
@@ -228,11 +238,17 @@ namespace lora {
             virtual uint8_t GetJoinDatarate() = 0;
 
             /**
+             * Get the current join count based off currentDevNonce
+             * @return join count
+            */
+            virtual uint16_t GetJoinCount();
+
+            /**
              * Calculate the next time a join request is possible
              * @param size of join frame
              * @returns LORA_OK
              */
-            virtual uint8_t CalculateJoinBackoff(uint8_t size) = 0;
+            virtual uint8_t CalculateJoinBackoff(uint8_t size);
 
             /**
              * Get the current datarate

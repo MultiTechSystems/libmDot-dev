@@ -167,7 +167,7 @@ class mDotEvent: public lora::MacEvents {
             PongReceived = false;
             TxNbRetries = 0;
 
-            logDebug("mDotEvent - TxDone");
+            logInfo("mDotEvent - TxDone");
             memset(&_flags, 0, sizeof(LoRaMacEventFlags));
             memset(&_info, 0, sizeof(LoRaMacEventInfo));
 

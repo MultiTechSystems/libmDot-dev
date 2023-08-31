@@ -45,7 +45,13 @@ class Fota {
         bool ready();
         int32_t timeToStart();
         bool getClockSynced();
+
         int32_t setClockOffset(uint32_t gps_time);
+        int32_t getClockOffset();
+        void restoreClockOffset(int32_t offset);
+
+        void setClockUpdated(uint32_t utc_time);
+        uint32_t getClockUpdated();
 
 
         bool isSendingCRC() {
@@ -61,11 +67,14 @@ class Fota {
         static void start();
 
         bool _enabled;
-        Thread _send_thread;
-        uint8_t p[242];
-        static Fota* _instance;
         mDot* _dot;
+        Thread _send_thread;
+        static Fota* _instance;
+        uint8_t p[242];
         bool _clk_synced = false;
+        time_t _clk_updated;
+        Mutex _clk_mutex;
+
 #ifdef FOTA
         FragmentationSession* _frag_session;
 #endif

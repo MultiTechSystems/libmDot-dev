@@ -38,14 +38,22 @@
 
 #include "FlashRecordStore.h"
 
+const uint8_t MULTICAST_SESSIONS = 8;
 
-#if defined(TARGET_MTS_MDOT_F411RE) || defined(TARGET_XDOT_L151CC)
+#if defined(TARGET_MTS_MDOT_F411RE) || defined(TARGET_XDOT_L151CC) || (defined(TARGET_XDOT_MAX32670)) // && !defined(TARGET_XDOTES_MAX32670) )
 #define USE_NVM_CONFIG
+#if defined(TARGET_XDOT_MAX32670)
+#define USE_EEPROM_BACKUP
+#else
 #define USE_RTC_BACKUP
+#endif
 class LoRaConfig;
 mbed::BlockDevice * mdot_override_external_block_device();
 
 #else
+#if defined(TARGET_XDOT_MAX32670) && defined(TARGET_XDOTES_MAX32670)
+#define USE_EEPROM_BACKUP
+#endif
 #define USE_RAM_CONFIG
 class LoRaConfigRAM;
 #endif
@@ -106,9 +114,12 @@ class mDot {
     public:
 
 #if defined(USE_NVM_CONFIG)
+#if defined(USE_EEPROM_BACKUP)
+#else
         uint32_t RTC_ReadBackupRegister(uint32_t RTC_BKP_DR);
         void RTC_WriteBackupRegister(uint32_t RTC_BKP_DR, uint32_t Data);
 
+#endif // USE_EEPROM_BACKUP
         void RTC_DisableWakeupTimer();
         void RTC_EnableWakeupTimer();
 #endif
@@ -142,6 +153,7 @@ class mDot {
             MDOT_LBT_CHANNEL_BUSY = -13,
             MDOT_NOT_IDLE = -14,
             MDOT_UNSUPPORTED = -15,
+            MDOT_NO_CHANNEL_PLAN = -16,
             MDOT_ERROR = -1024,
         } mdot_ret_code;
 
@@ -207,7 +219,7 @@ class mDot {
             WAKE_TRIGGER_FALL
         };
 
-#if defined(TARGET_MTS_MDOT_F411RE) || defined(TARGET_XDOT_L151CC)
+#if defined(TARGET_MTS_MDOT_F411RE) || defined(TARGET_XDOT_L151CC) || defined(TARGET_XDOT_MAX32670)
         enum UserBackupRegs {
             UBR0,
             UBR1,
@@ -219,7 +231,7 @@ class mDot {
             UBR7,
             UBR8,
             UBR9
-#if defined (TARGET_XDOT_L151CC)
+#if defined (TARGET_XDOT_L151CC) || defined(TARGET_XDOT_MAX32670)
            ,UBR10,
             UBR11,
             UBR12,
@@ -234,7 +246,7 @@ class mDot {
             UBR21
 #endif /* TARGET_XDOT_L151CC */
         };
-#endif /* TARGET_MTS_MDOT_F411RE) || TARGET_XDOT_L151CC */
+#endif /* TARGET_MTS_MDOT_F411RE) || TARGET_XDOT_L151CC || TARGET_XDOT_MAX32670 */
 
 
 #if defined(TARGET_MTS_MDOT_F411RE)
@@ -290,7 +302,7 @@ class mDot {
 
 #if defined(TARGET_MTS_MDOT_F411RE)
         uint32_t UserRegisters[10];
-#elif defined(TARGET_XDOT_L151CC)
+#elif defined(TARGET_XDOT_L151CC) || defined(TARGET_XDOT_MAX32670)
         uint32_t UserRegisters[22];
 #endif /* TARGET_MTS_MDOT_F411RE */
 
@@ -576,6 +588,34 @@ class mDot {
         std::vector<uint8_t> getDeviceId();
 
         /**
+         * Set custom device id
+         * a storage for a custom device id in protected storage that is not reset on factory defaults
+         * @param cust_id a string of up to 16 characters
+         * @return MDOT_OK if success
+         */
+        int32_t setCustomDeviceID(const std::string& cust_id);
+
+        /**
+         * Get custom device id
+         * @return string containing custom device id (up to 16 characters)
+         */
+        std::string getCustomDeviceID();
+
+        /**
+         * Set custom serial number
+         * a storage for a custom serial number in protected storage that is not reset on factory defaults
+         * @param serial_no a string of up to 16 characters
+         * @return MDOT_OK if success
+         */
+        int32_t setCustomSerialNumber(const std::string& serial_no);
+
+        /**
+         * Get custom serial number
+         * @return string containing serial number (up to 16 characters)
+         */
+        std::string getCustomSerialNumber();
+
+        /**
          * Get the device port to be used for lora application data (1-223)
          *  @returns port
          */
@@ -847,7 +887,7 @@ class mDot {
          * Save current network session to flash
          * has no effect for MANUAL network join mode
          */
-        void saveNetworkSession();
+        void saveNetworkSession(bool write=true);
 
         /**
          * Set number of times joining will retry each sub-band before changing
@@ -1121,6 +1161,12 @@ class mDot {
          */
         uint32_t getRadioRandom();
 
+        int32_t getClockOffset();
+        void setClockOffset(int32_t val);
+
+        uint32_t getClockUpdated();
+        void setClockUpdated(uint32_t val);
+
         /**
          * Get data rate spreading factor and bandwidth
          * EU868 Datarates
@@ -1295,6 +1341,16 @@ class mDot {
          */
         int32_t setFota(const bool& on);
         bool getFota();
+
+        /**
+         *
+         * get/set ADR auto increment dr
+         *
+         * true == ADR Auto Increment datarate is off
+         * set function returns MDOT_OK if success
+         */
+        int32_t setDisableIncrementDR(const bool& on);
+        bool getDisableIncrementDR();
 
         /**
          *
@@ -1684,7 +1740,7 @@ class mDot {
          * @return True if data matches.
          */
         bool verifyOtp(int* commits);
-#elif defined(TARGET_XDOT_L151CC)
+#elif defined(TARGET_XDOT_L151CC) || defined(TARGET_XDOT_MAX32670)
         ///////////////////////////////////////////////////////////////
         // EEPROM (Non Volatile Memory) Operation Functions for xDot //
         ///////////////////////////////////////////////////////////////
@@ -1904,6 +1960,30 @@ class mDot {
 
         void mcGroupKeys(uint8_t *mcKeyEncrypt, uint32_t addr, uint8_t groupId, uint32_t frame_count);
 
+#if defined(TARGET_XDOT_MAX32670)
+        void setVddMin(uint8_t vdd);
+        uint8_t getVddMin(void);
+#if defined(MTS_RADIO_CTRL_COMMANDS)
+        void setRadioLNA(uint8_t boosted);
+        uint8_t getRadioLNA(void);
+        void setRadioPaDuty(uint8_t paDutyCycle);
+        uint8_t getRadioPaDuty(void);
+        void setRadioHpMax(uint8_t hpMax);
+        uint8_t getRadioHpMax(void);
+        void setRadioXTATrim(uint8_t xtaTrim);
+        uint8_t getRadioXTATrim(void);
+        void setRadioXTBTrim(uint8_t xtbTrim);
+        uint8_t getRadioXTBTrim(void);
+        void setSWState(uint8_t value);
+        uint8_t getSWState(void);
+        void setRampTime(uint8_t rampTime);
+        uint8_t getRampTime(void);
+        void setTxInfPreambleMode(uint8_t enable, int8_t power, uint32_t frequency, uint32_t bandwidth, uint8_t spreadingFactor);
+        uint8_t getTxInfPreambleMode(void);
+        void radioSleep(void);
+#endif // MTS_RADIO_CTRL_COMMANDS
+#endif // TARGET_XDOT_MAX32670
+
 #if defined(FOTA) && FLASH_RECORD_STORE_FILE_ENABLE
         mts::FlashFileRecord* getFotaFileRecord();
 #endif
@@ -1924,11 +2004,12 @@ class mDot {
 
         bool _standbyFlag;
         uint8_t _savedPort;
-        lora::ChannelPlan* _plan;
+
 #if TEST_MODE_ENABLE
         void handleTestModePacket();
         bool _testMode;
 #endif
+        lora::ChannelPlan* _plan;
 
         struct BackupData
         {
