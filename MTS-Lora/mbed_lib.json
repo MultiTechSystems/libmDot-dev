@@ -1,0 +1,69 @@
+{
+    "name": "mts-lora",
+    "config": {
+        "radio-pin-reset": {
+            "macro_name": "LORA_RADIO_PIN_RESET",
+            "value": "LORA_RESET"
+        },
+        "radio-pin-dio0": {
+            "macro_name": "LORA_RADIO_PIN_DIO0",
+            "value": "LORA_DIO0"
+        },
+        "radio-pin-dio1": {
+            "macro_name": "LORA_RADIO_PIN_DIO1",
+            "value": "LORA_DIO1"
+        },
+        "radio-pin-dio2": {
+            "macro_name": "LORA_RADIO_PIN_DIO2",
+            "value": "LORA_DIO2"
+        },
+        "radio-pin-dio3": {
+            "macro_name": "LORA_RADIO_PIN_DIO3",
+            "value": "LORA_DIO3"
+        },
+        "radio-pin-dio4": {
+            "macro_name": "LORA_RADIO_PIN_DIO4",
+            "value": "LORA_DIO4"
+        },
+        "radio-pin-mosi": {
+            "macro_name": "LORA_RADIO_PIN_MOSI",
+            "value": "LORA_MOSI"
+        },
+        "radio-pin-miso": {
+            "macro_name": "LORA_RADIO_PIN_MISO",
+            "value": "LORA_MISO"
+        },
+        "radio-pin-sck": {
+            "macro_name": "LORA_RADIO_PIN_SCK",
+            "value": "LORA_SCK"
+        },
+        "radio-pin-nss": {
+            "macro_name": "LORA_RADIO_PIN_NSS",
+            "value": "LORA_NSS"
+        },
+        "radio-pin-busy": {
+            "macro_name": "LORA_RADIO_PIN_BUSY",
+            "value": "LORA_BUSY"
+        },
+        "rf-switch-pin": {
+            "macro_name": "LORA_RADIO_RF_SW",
+            "value": "RF_SW_CTRL"
+        },
+        "use-sx1262": {
+            "macro_name": "USE_SX1262",
+            "value": 0
+        },
+        "lora-radio-stack-size": {
+            "macro_name": "LORA_RADIO_STACK_SIZE",
+            "value": 1280
+        }
+    },
+    "target_overrides": {
+        "MAX32670EVKIT": {
+            "use-sx1262": true
+        },
+        "XDOT_MAX32670": {
+            "use-sx1262": true
+        }
+    }
+}
