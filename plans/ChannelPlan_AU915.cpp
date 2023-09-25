@@ -807,6 +807,8 @@ void lora::ChannelPlan_AU915::EnableDefaultChannels() {
 
 uint8_t ChannelPlan_AU915::GetNextChannel()
 {
+    bool error = true;
+
     if (GetSettings()->Session.AggregatedTimeOffEnd != 0) {
         return LORA_AGGREGATED_DUTY_CYCLE;
     }
@@ -884,27 +886,43 @@ uint8_t ChannelPlan_AU915::GetNextChannel()
         int16_t timeout = 10000;
         Timer tmr;
         tmr.start();
-        auto tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
-        for (uint8_t j = rand_r(0, nbEnabledChannels - 1); tm_ms < timeout; j++) {
-            tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
-            freq = GetChannel(enabledChannels[j]).Frequency;
+        while(std::chrono::duration_cast<std::chrono::milliseconds>(tmr.elapsed_time()).count() < timeout)
+        {
+            uint8_t channel = 0;
+            // grab the next channel if any are enabled
+            if(_randomChannel.NextChannel(enabledChannels, nbEnabledChannels, &channel)) {
+                freq = GetChannel(channel).Frequency;
 
-            if (GetRadio()->IsChannelFree(SxRadio::MODEM_LORA, freq, thres)) {
-                _txChannel = enabledChannels[j];
-                break;
+                if (GetRadio()->IsChannelFree(SxRadio::MODEM_LORA, freq, thres)) {
+                    _txChannel = channel;
+                    break;
+                }
+            }
+            else {
+            	error = true;
             }
         }
     } else {
-        uint8_t j = rand_r(0, nbEnabledChannels - 1);
-        _txChannel = enabledChannels[j];
-        freq = GetChannel(_txChannel).Frequency;
+        uint8_t channel = 0;
+        if(_randomChannel.NextChannel(enabledChannels, nbEnabledChannels, &channel))  {
+            _txChannel = channel;
+            freq = GetChannel(_txChannel).Frequency;
+        }
+        else  {
+        	error = true;
+        }
     }
 
-    assert(freq != 0);
+    if(error) {
+        logError("Unable to select a random channel");
+    }
+    else {
+        assert(freq != 0);
 
-    logDebug("Using channel %d : %d", _txChannel, freq);
-    GetRadio()->SetChannel(freq);
+        logDebug("Using channel %d : %d", _txChannel, freq);
+        GetRadio()->SetChannel(freq);
+    }
 
     delete [] enabledChannels;
     return LORA_OK;
