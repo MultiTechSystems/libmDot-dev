@@ -21,6 +21,7 @@
 #include "mbed.h"
 #include "ApplicationLayerPackage.h"
 #define GPS_EPOCH 315964800U
+#define MULTICAST_SESSIONS 3
 
 
 class MulticastGroup : public ApplicationLayerPackage {
@@ -34,8 +35,6 @@ class MulticastGroup : public ApplicationLayerPackage {
         int32_t timeToStart();
         void fixEventQueue();
         void setClockOffset(int32_t offset);
-        int32_t getClockOffset();
-
         bool switchClassIfPending();
         void switchClass();
         bool isClassSwitchActive() const;
@@ -59,11 +58,12 @@ class MulticastGroup : public ApplicationLayerPackage {
             uint32_t addr;
             uint32_t max_frame_count;
             us_timestamp_t timetostart;
+            int32_t class_c_end;
+            int32_t class_c_start;
             char dev_class;
             time_t time_setup;
             int8_t periodicity;
         } mcgroup;
-
 
         bool* _filled;
         uint8_t _groupId;

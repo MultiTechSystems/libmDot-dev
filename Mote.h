@@ -24,7 +24,7 @@
 #include <vector>
 
 class SxRadio;
-#if defined(TARGET_XDOT_MAX32670)
+#if USE_SX1262
 class SxRadio1262;
 #else
 class SxRadio1272;
@@ -297,11 +297,6 @@ namespace lora {
             Statistics& GetStats();
 
             /**
-             * Set/restore the current statistics for the device
-             */
-            void SetStats(const Statistics &stats);
-            
-            /**
              * Reset the current statistics for the device
              */
             void ResetStats();
@@ -326,7 +321,7 @@ namespace lora {
             void Sleep();
 
         protected:
-#if defined(TARGET_XDOT_MAX32670)
+#if USE_SX1262
             SxRadio1262* _radio;
 #else
             SxRadio1272* _radio;

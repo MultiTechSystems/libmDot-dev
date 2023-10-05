@@ -49,7 +49,7 @@ void ChannelPlan_AS923_Japan2::Init() {
 
     _plan = AS923_JAPAN;
     _planName = "AS923-JAPAN2";
-    _minFrequency = 922400000;
+    _minFrequency = 920600000;
     _maxFrequency = 928000000;
 
     _minDatarate = 2;

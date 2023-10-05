@@ -249,7 +249,7 @@ public:
      * \param [IN]: addr Register address
      * \param [IN]: data New register value
      */
-#if !defined(TARGET_XDOT_MAX32670)
+#if !USE_SX1262
     virtual void Write( uint8_t addr, uint8_t data ) = 0;
     /*!
      * \brief Reads the radio register at the specified address
@@ -279,7 +279,6 @@ public:
 #endif
     virtual void SignalMacEvent(void) {};
     virtual void SignalLinkEvent(void) {};
-    virtual void SignalRxTimeout(void) {};
 
     virtual void ResetRadio(void) {};
 
@@ -293,29 +292,8 @@ public:
 
     const uint32_t WakeupTime;
 
-#if defined(TARGET_XDOT_MAX32670)
-    virtual uint8_t GetVddMin(void) = 0;
-    virtual void SetVddMin(uint8_t vdd) = 0;
 
-#if defined(MTS_RADIO_CTRL_COMMANDS)
-    virtual void SetLNA(uint8_t rxBoosted) = 0;
-    virtual uint8_t GetLNA(void) = 0;
-    virtual void SetPaDutyCycle(uint8_t paDutyCycle) = 0;
-    virtual uint8_t GetPaDutyCycle(void) = 0;
-    virtual void SetHpMax(uint8_t hpMax) = 0;
-    virtual uint8_t GetHpMax(void) = 0;
-    virtual void SetXTATrim(uint8_t xtaTrim) = 0;
-    virtual uint8_t GetXTATrim(void) = 0;
-    virtual void SetXTBTrim(uint8_t xtbTrim) = 0;
-    virtual uint8_t GetXTBTrim(void) = 0;
-    virtual void setSWState(uint8_t value) = 0;
-    virtual uint8_t getSWState(void) = 0; 
-    virtual void SetRampTime(uint8_t rampTime) = 0;
-    virtual uint8_t GetRampTime(void) = 0;
-    virtual void SetTxInfPreamble(uint8_t enable, int8_t power, uint32_t frequency, uint32_t bandwidth, uint8_t spreadingFactor) = 0;
-    virtual uint8_t GetTxInfPreamble(void) = 0;
-#endif //__MTS_RADIO_CTRL_COMMANDS__
-#endif //__TARGET_XDOT_MAX32670__
+
 
 protected:
     int32_t freq_offset;

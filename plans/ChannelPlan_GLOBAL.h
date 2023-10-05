@@ -89,6 +89,13 @@ namespace lora {
             virtual uint8_t GetJoinDatarate();
 
             /**
+             * Calculate the next time a join request is possible
+             * @param size of join frame
+             * @returns LORA_OK
+             */
+            virtual uint8_t CalculateJoinBackoff(uint8_t size);
+
+            /**
              * Get next channel and set the SxRadio tx config with current settings
              * @return LORA_OK
              */
