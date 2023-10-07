@@ -86,11 +86,7 @@ class MulticastGroup : public ApplicationLayerPackage {
             mcgroup* group;
             bool active;
             bool pending;
-            #if defined(TARGET_MAX32660EVSYS) || defined(TARGET_MAX32630FTHR)
-                Timeout timer;
-            #else
-                LowPowerTimeout timer;
-            #endif
+            LowPowerTimeout timer;
         } _class_switch;
 
         void setupClassB(uint8_t id);

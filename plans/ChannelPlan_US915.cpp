@@ -161,6 +161,12 @@ uint8_t ChannelPlan_US915::HandleJoinAccept(const uint8_t* buffer, uint8_t size)
         for (int i = 13; i < size - 5; i += 2) {
             SetChannelMask((i-13)/2, buffer[i+1] << 8 | buffer[i]);
         }
+    } else {
+        // Reset state of random channels to enable the last used FSB for the first tx to confirm network settings
+        _randomChannel.ChannelState125K(0);
+        _randomChannel.MarkAllSubbandChannelsUnused(_txFrequencySubBand-1);
+        _randomChannel.ChannelState500K(1 << (_txFrequencySubBand - 1));
+        EnableDefaultChannels();
     }
 
     return LORA_OK;
@@ -194,7 +200,11 @@ bool ChannelPlan_US915::IsChannelEnabled(uint8_t channel) {
 
 uint8_t ChannelPlan_US915::GetMinDatarate() {
     if (GetSettings()->Network.Mode == lora::PEER_TO_PEER)
+#if defined(CERTIFICATION_DATARATES)
+        return 0;
+#else
         return 8;
+#endif
     else
         return _minDatarate;
 }
@@ -249,7 +259,7 @@ uint8_t ChannelPlan_US915::SetTxConfig() {
 
     pwr = std::min < int8_t > (pwr, max_pwr);
 
-    for (int i = 20; i >= 0; i--) {
+    for (int i = RADIO_POWERS_SIZE; i >= 0; i--) {
         if (RADIO_POWERS[i] <= pwr) {
             pwr = i;
             break;
@@ -779,11 +789,13 @@ uint8_t ChannelPlan_US915::SetDutyBandDutyCycle(uint8_t band, uint16_t dutyCycle
 }
 
 void lora::ChannelPlan_US915::EnableDefaultChannels() {
-    SetFrequencySubBand(GetFrequencySubBand());
+    SetFrequencySubBand(GetSettings()->Network.FrequencySubBand);
 }
 
 uint8_t ChannelPlan_US915::GetNextChannel()
 {
+	bool error = false;
+
     if (GetSettings()->Session.AggregatedTimeOffEnd != 0) {
         return LORA_AGGREGATED_DUTY_CYCLE;
     }
@@ -864,27 +876,43 @@ uint8_t ChannelPlan_US915::GetNextChannel()
         int16_t timeout = 10000;
         Timer tmr;
         tmr.start();
-        auto tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
-        for (uint8_t j = rand_r(0, nbEnabledChannels - 1); tm_ms < timeout; j++) {
-            tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
-            freq = GetChannel(enabledChannels[j]).Frequency;
+        while(std::chrono::duration_cast<std::chrono::milliseconds>(tmr.elapsed_time()).count() < timeout)
+        {
+            uint8_t channel = 0;
+            // grab the next channel if any are enabled
+            if(_randomChannel.NextChannel(enabledChannels, nbEnabledChannels, &channel)) {
+                freq = GetChannel(channel).Frequency;
 
-            if (GetRadio()->IsChannelFree(SxRadio::MODEM_LORA, freq, thres)) {
-                _txChannel = enabledChannels[j];
-                break;
+                if (GetRadio()->IsChannelFree(SxRadio::MODEM_LORA, freq, thres)) {
+                    _txChannel = channel;
+                    break;
+                }
+            }
+            else {
+            	error = true;
             }
         }
     } else {
-        uint8_t j = rand_r(0, nbEnabledChannels - 1);
-        _txChannel = enabledChannels[j];
-        freq = GetChannel(_txChannel).Frequency;
+        uint8_t channel = 0;
+        if(_randomChannel.NextChannel(enabledChannels, nbEnabledChannels, &channel))  {
+            _txChannel = channel;
+            freq = GetChannel(_txChannel).Frequency;
+        }
+        else  {
+        	error = true;
+        }
     }
 
-    assert(freq != 0);
+    if(error) {
+        logError("Unable to select a random channel");
+    }
+    else {
+        assert(freq != 0);
 
-    logDebug("Using channel %d : %d", _txChannel, freq);
-    GetRadio()->SetChannel(freq);
+        logDebug("Using channel %d : %d", _txChannel, freq);
+        GetRadio()->SetChannel(freq);
+    }
 
     delete [] enabledChannels;
     return LORA_OK;
@@ -901,7 +929,8 @@ uint8_t lora::ChannelPlan_US915::GetJoinDatarate() {
         altdr = (GetSettings()->Network.DevNonce % 2) == 0;
 
         if ((GetSettings()->Network.DevNonce % 9) == 0) {
-            dr4_fsb = GetSettings()->Network.DevNonce / 9;
+            // set DR4 fsb to 1-8 incrementing every 9th join
+            dr4_fsb = ((GetSettings()->Network.DevNonce / 9) % 8) + 1;
             fsb = 9;
         } else {
             fsb = (GetSettings()->Network.DevNonce % 9);
@@ -926,106 +955,6 @@ uint8_t lora::ChannelPlan_US915::GetJoinDatarate() {
     }
 
     return dr;
-}
-
-uint8_t lora::ChannelPlan_US915::CalculateJoinBackoff(uint8_t size) {
-
-    time_t now = time(NULL);
-    uint32_t time_on_max = 0;
-    uint32_t time_off_max = 15;
-    uint32_t rand_time_off = 0;
-    uint16_t join_cnt = 0;
-
-    if ((time_t)GetSettings()->Session.JoinTimeOffEnd > now) {
-        return LORA_JOIN_BACKOFF;
-    }
-
-    if (GetSettings()->Session.JoinFirstAttempt > 0) {
-        // Time since first join / 10  so after 600s max is 60s and after 3600s (1hr) max is 360s (6min) up to 60min
-        time_off_max = (now - GetSettings()->Session.JoinFirstAttempt) / 10;
-        time_off_max = std::min < uint32_t > (time_off_max, 60 * 60);
-    }
-
-    uint32_t secs_since_first_attempt = (now - GetSettings()->Session.JoinFirstAttempt);
-    uint16_t hours_since_first_attempt = secs_since_first_attempt / (60 * 60);
-
-    logInfo("JoinBackoff: Sec Since: %lu", secs_since_first_attempt);
-    logInfo("JoinBackoff: Hours since: %lu", hours_since_first_attempt);
-
-    if (hours_since_first_attempt < 1) {
-        time_on_max = 36000;
-    } else if (hours_since_first_attempt < 11) {
-        time_on_max = 72000;
-    } else {
-        time_on_max = 80700;
-    }
-
-    rand_time_off = rand_r(time_off_max / 2, time_off_max);
-
-    if (IsPlanFixed() && GetFrequencySubBand() == 0) {
-        join_cnt = (GetSettings()->Network.DevNonce) % 16;
-    } else {
-        join_cnt = (GetSettings()->Network.DevNonce) % 8;
-    }
-
-    if (GetSettings()->Session.JoinTimeOnAir > (time_on_max - GetTimeOnAir(size))) {
-        // is this the last join attempt allowed
-        join_cnt = 0;
-    }
-
-    if (GetSettings()->Session.JoinFirstAttempt == 0) {
-        /* 1 % duty-cycle for first hour
-         * 0.1 % next 10 hours
-         * 0.01 % upto 24 hours         */
-        GetSettings()->Session.JoinFirstAttempt = now;
-        GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
-        GetSettings()->Session.JoinTimeOffEnd = now + rand_r(GetSettings()->Network.JoinDelay + 2, GetSettings()->Network.JoinDelay + 3);
-    } else if (join_cnt == 0) {
-        if (hours_since_first_attempt < 1) {
-            if (GetSettings()->Session.JoinTimeOnAir < time_on_max - GetTimeOnAir(size)) {
-                GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
-                GetSettings()->Session.JoinTimeOffEnd = now + rand_time_off;
-            } else {
-                logWarning("Max time-on-air limit met for current join backoff period");
-                GetSettings()->Session.JoinTimeOffEnd = GetSettings()->Session.JoinFirstAttempt + 60 * 60;
-            }
-        } else if (hours_since_first_attempt < 11) {
-            if (GetSettings()->Session.JoinTimeOnAir < 36000) {
-                GetSettings()->Session.JoinTimeOnAir = 36000;
-            }
-
-            if (GetSettings()->Session.JoinTimeOnAir < time_on_max - GetTimeOnAir(size)) {
-                GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
-                GetSettings()->Session.JoinTimeOffEnd = now + rand_time_off;
-            } else {
-                logWarning("Max time-on-air limit met for current join backoff period");
-                GetSettings()->Session.JoinTimeOffEnd = GetSettings()->Session.JoinFirstAttempt + 11 * 60 * 60;
-            }
-        } else {
-            if (GetSettings()->Session.JoinTimeOnAir < 72000) {
-                GetSettings()->Session.JoinTimeOnAir = 72000;
-            }
-
-            if (GetSettings()->Session.JoinTimeOnAir < time_on_max - GetTimeOnAir(size)) {
-                GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
-                GetSettings()->Session.JoinTimeOffEnd = now + rand_time_off;
-            } else {
-                logWarning("Max time-on-air limit met for current join backoff period");
-                // Reset the join time on air and set end of restriction to the next 24 hour period
-                GetSettings()->Session.JoinTimeOnAir = 72000;
-                uint16_t days = (now - GetSettings()->Session.JoinFirstAttempt) / (24 * 60 * 60) + 1;
-                logInfo("JoinBackoff days : %d", days);
-                GetSettings()->Session.JoinTimeOffEnd = GetSettings()->Session.JoinFirstAttempt + ((days * 24) + 11) * 60 * 60;
-            }
-        }
-
-        logInfo("JoinBackoff: %lu seconds  Time On Air: %lu / %lu", GetSettings()->Session.JoinTimeOffEnd - now, GetSettings()->Session.JoinTimeOnAir, time_on_max);
-    } else {
-        GetSettings()->Session.JoinTimeOnAir += GetTimeOnAir(size);
-        GetSettings()->Session.JoinTimeOffEnd = now + rand_r(GetSettings()->Network.JoinDelay + 2, GetSettings()->Network.JoinDelay + 3);
-    }
-
-    return LORA_OK;
 }
 
 uint8_t ChannelPlan_US915::DecodeBeacon(const uint8_t* payload, size_t size, BeaconData_t& data) {
