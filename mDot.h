@@ -66,12 +66,6 @@ class mDot {
         mDot(const mDot&);
         mDot& operator=(const mDot&);
 
-        uint32_t RTC_ReadBackupRegister(uint32_t RTC_BKP_DR);
-        void RTC_WriteBackupRegister(uint32_t RTC_BKP_DR, uint32_t Data);
-
-        void RTC_DisableWakeupTimer();
-        void RTC_EnableWakeupTimer();
-
         void enterStopMode(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM);
         void enterStandbyMode(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM);
 
@@ -97,6 +91,12 @@ class mDot {
         } state;
 
     public:
+
+        uint32_t RTC_ReadBackupRegister(uint32_t RTC_BKP_DR);
+        void RTC_WriteBackupRegister(uint32_t RTC_BKP_DR, uint32_t Data);
+
+        void RTC_DisableWakeupTimer();
+        void RTC_EnableWakeupTimer();
 
 #if defined(TARGET_MTS_MDOT_F411RE)
         typedef enum {
@@ -1640,14 +1640,14 @@ class mDot {
 
         bool repairFlashFileSystem();
 
-        /** 
+        /**
          * Write Device EUI, Network ID, Netowrk Key, and Gen App Key to OTP.
          * @return Number of write remaining if positive. A negative number
          * indicates an error.
          */
         int writeOtp();
 
-        /** 
+        /**
          * Verify the data in OTP matches current values.
          * @param commits the number of remaining commits if not NULL
          * @return True if data matches.
@@ -1731,7 +1731,7 @@ class mDot {
         int32_t setRxDataRate(const uint8_t& dr);
         uint8_t getRxDataRate();
 
-        
+
         // set/get duty cycle
         int32_t setDutyCycle(uint8_t dc);
         uint8_t getDutyCycle();
