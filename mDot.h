@@ -1270,6 +1270,26 @@ class mDot {
 
         /**
          *
+         * get/set fota enabled
+         *
+         * true == FOTA is on
+         * set function returns MDOT_OK if success
+         */
+        int32_t setFota(const bool& on);
+        bool getFota();
+
+        /**
+         *
+         * get/set ADR auto increment dr
+         *
+         * true == ADR Auto Increment datarate is off
+         * set function returns MDOT_OK if success
+         */
+        int32_t setDisableIncrementDR(const bool& on);
+        bool getDisableIncrementDR();
+
+        /**
+         *
          * get/set adaptive data rate
          * configure data rates and power levels based on signal to noise of packets received at gateway
          * true == adaptive data rate is on
