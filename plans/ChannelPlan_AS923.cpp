@@ -955,9 +955,7 @@ uint8_t ChannelPlan_AS923::HandleMacCommand(uint8_t* payload, uint8_t& index) {
             GetSettings()->Session.Max_EIRP = MAX_ERP_VALUES[(eirp_dwell & 0x0F)];
             logDebug("buffer index %d", GetSettings()->Session.CommandBufferIndex);
 
-            if (GetSettings()->Session.TxPower > GetSettings()->Session.Max_EIRP) {
-                GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
-            }
+            GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
 
             if (GetSettings()->Session.CommandBufferIndex < std::min<int>(GetMaxPayloadSize(), COMMANDS_BUFFER_SIZE)) {
                 logDebug("Add tx param setup mac cmd to buffer");

@@ -42,25 +42,56 @@ class Fota {
         bool txPending();
         void enable(bool enabled);
         bool enable();
+
+        void setMode(uint8_t mode);
+        uint8_t getMode();
+
         void fixEventQueue();
         bool ready();
         int32_t timeToStart();
         bool getClockSynced();
         int32_t setClockOffset(uint32_t gps_time);
 
+        int32_t getClockOffset();
+        void restoreClockOffset(int32_t offset);
+
+        void setClockUpdated(uint32_t utc_time);
+        uint32_t getClockUpdated();
+
+        bool isSendingCRC() {
+        #ifdef FOTA
+            return (_msg.tx.port == APP_PORT_FRAGMENTATION) && (_msg.tx.payload.at(0) == FragmentationSession::CHECKSUM);
+        #else
+            return false;
+        #endif
+        }
+
+        enum Mode {
+            DISABLED,
+            ENABLED,
+            RESET,
+            STATUS,
+            PASSTHROUGH
+        };
+
     private:
         static void start();
 
         bool _enabled;
+        uint8_t _mode;
         Thread _send_thread;
         uint8_t p[242];
         static Fota* _instance;
         mDot* _dot;
         bool _clk_synced = false;
+        time_t _clk_updated;
+        Mutex _clk_mutex;
+
 #ifdef FOTA
         FragmentationSession* _frag_session;
 #endif
         MulticastGroup* _mc_group;
+
 
         struct {
             ApplicationMessage rx;

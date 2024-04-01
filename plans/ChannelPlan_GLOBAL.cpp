@@ -2407,10 +2407,7 @@ uint8_t ChannelPlan_GLOBAL::HandleMacCommand(uint8_t* payload, uint8_t& index) {
                 else
                     GetSettings()->Session.Max_EIRP = AS923_MAX_ERP_VALUES[(eirp_dwell & 0x0F)];
 
-
-                if (GetSettings()->Session.TxPower > GetSettings()->Session.Max_EIRP) {
-                    GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
-                }
+                GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
 
                 logDebug("buffer index %d", GetSettings()->Session.CommandBufferIndex);
                 if (GetSettings()->Session.CommandBufferIndex < std::min<int>(GetMaxPayloadSize(), COMMANDS_BUFFER_SIZE)) {

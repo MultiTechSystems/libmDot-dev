@@ -35,6 +35,8 @@ class MulticastGroup : public ApplicationLayerPackage {
         int32_t timeToStart();
         void fixEventQueue();
         void setClockOffset(int32_t offset);
+        int32_t getClockOffset();
+
         bool switchClassIfPending();
         void switchClass();
         bool isClassSwitchActive() const;
