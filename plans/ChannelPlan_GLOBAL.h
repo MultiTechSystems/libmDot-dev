@@ -263,6 +263,8 @@ namespace lora {
              */
             virtual void DefaultLBT();
 
+            virtual bool IsGlobalPlan() { return true; }
+
         protected:
 
             uint8_t _plan_id;

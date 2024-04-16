@@ -1185,10 +1185,17 @@ uint8_t ChannelPlan_GLOBAL::HandleJoinAccept(const uint8_t* buffer, uint8_t size
                 SetChannelMask((i-13)/2, buffer[i+1] << 8 | buffer[i]);
             }
         } else {
+            uint8_t fsb = 0;
+
+            if (_txChannel < 64)
+                fsb = (_txChannel / 8);
+            else
+                fsb = (_txChannel % 8);
+
             // Reset state of random channels to enable the last used FSB for the first tx to confirm network settings
             _randomChannel.ChannelState125K(0);
-            _randomChannel.MarkAllSubbandChannelsUnused(_txFrequencySubBand-1);
-            _randomChannel.ChannelState500K(1 << (_txFrequencySubBand - 1));
+            _randomChannel.MarkAllSubbandChannelsUnused(fsb);
+            _randomChannel.ChannelState500K(1 << fsb);
             EnableDefaultChannels();
         }
     } else if (IsPlanDynamic() && size > 17 && buffer[28] == 0x00) {

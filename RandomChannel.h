@@ -92,14 +92,8 @@ namespace lora {
              */
             bool TakeActiveBit(uint8_t index, uint8_t *channel);
 
-
-#if CHANNEL_PLAN == CP_CN470
-            static const uint8_t NUM_125K_SUBBANDS = 8;
-            static const uint8_t NUM_500K_SUBBANDS = 4;
-#else
             static const uint8_t NUM_125K_SUBBANDS = 8;
             static const uint8_t NUM_500K_SUBBANDS = 1;
-#endif
 
             static const uint8_t NUM_SUBBANDS = NUM_125K_SUBBANDS + NUM_500K_SUBBANDS;
 

@@ -646,6 +646,8 @@ namespace lora {
             SxRadio* GetRadio();                //!< Get pointer to the SxRadio object or assert if it is null
             Settings* GetSettings();            //!< Get pointer to the settings object or assert if it is null
             RandomChannel *GetRandomChannel();
+
+            virtual bool IsGlobalPlan() { return false; }
         protected:
 
             /**
