@@ -576,6 +576,12 @@ class mDot {
         int32_t setClass(std::string newClass);
 
         /**
+         * Set the device class A, B or C without changing configuration, revert class after reset
+         *  @returns MDOT_OK if success
+         */
+        int32_t setTempClass(std::string newClass);
+
+        /**
          * Get the device class A, B or C
          *  @returns MDOT_OK if success
          */
@@ -1201,6 +1207,12 @@ class mDot {
         uint32_t getTimeOnAir(uint8_t bytes);
 
         /**
+         * Get time on air for last transmitted packet
+         * @returns the amount of time (in ms) it took to send bytes based on current configuration
+         */
+        uint32_t getTimeOnAir();
+
+        /**
          * Get min frequency
          * @returns minimum frequency based on current channel plan
          */
@@ -1458,7 +1470,7 @@ class mDot {
          * For the XDOT
          *      in sleep mode, the device can be woken up on GPIO (0-3), UART1_RX, WAKE or by the RTC alarm
          *      in deepsleep mode, the device can only be woken up using the WKUP pin (PA0, WAKE) or by the RTC alarm
-         * @returns Milliseconds slept on success
+         * @returns Milliseconds slept on success, MDOT_NOT_IDLE if device is busy with transmit/receive processing or FOTA.
          */
         int32_t sleep(const uint32_t& interval, const uint8_t& wakeup_mode = RTC_ALARM, const bool& deepsleep = true);
 

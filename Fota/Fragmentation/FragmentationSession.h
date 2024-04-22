@@ -38,6 +38,7 @@ class FragmentationSession : public ApplicationLayerPackage {
         bool isReady() const;
         bool isComplete() const;
         bool allFragmentsReceived() const;
+        void forceComplete();
         bool cleanUp();
         bool upgradeFile(ApplicationMessage& uplink);
 

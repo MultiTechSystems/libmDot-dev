@@ -33,6 +33,7 @@ class MulticastGroup : public ApplicationLayerPackage {
         uint8_t getPort();
         void processCmd(ApplicationMessage& recv, ApplicationMessage& resp);
         int32_t timeToStart();
+        void updateClassSwitchTime();
         void fixEventQueue();
         void setClockOffset(int32_t offset);
         int32_t getClockOffset();
@@ -54,6 +55,7 @@ class MulticastGroup : public ApplicationLayerPackage {
             bool valid;
             uint8_t dr;
             uint8_t fragGroup;
+            uint16_t sessiontimeout;
             uint16_t timeout;
             uint32_t tme;
             uint32_t freq;
