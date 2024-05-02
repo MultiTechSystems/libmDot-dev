@@ -938,37 +938,42 @@ uint8_t ChannelPlan_AU915::GetNextChannel()
 uint8_t lora::ChannelPlan_AU915::GetJoinDatarate() {
     uint8_t dr = GetSettings()->Session.TxDatarate;
 
-    if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
-        uint8_t fsb = 1;
-        uint8_t dr4_fsb = 1;
-        bool altdr = false;
+    uint8_t fsb = 1;
+    uint8_t dr4_fsb = 1;
+    bool altdr = false;
 
-        altdr = (GetSettings()->Network.DevNonce % 2) == 0;
+    altdr = (GetSettings()->Network.DevNonce % 2) == 0;
 
-        if ((GetSettings()->Network.DevNonce % 9) == 0) {
-            // set DR4 fsb to 1-8 incrementing every 9th join
-            dr4_fsb = ((GetSettings()->Network.DevNonce / 9) % 8) + 1;
-            fsb = 9;
+    if ((GetSettings()->Network.DevNonce % 9) == 0) {
+        // set DR4 fsb to 1-8 incrementing every 9th join
+        dr4_fsb = ((GetSettings()->Network.DevNonce / 9) % 8) + 1;
+        fsb = 9;
+    } else {
+        fsb = (GetSettings()->Network.DevNonce % 9);
+    }
+
+    if (GetSettings()->Network.FrequencySubBand == 0) {
+        if (fsb < 9) {
+            SetFrequencySubBand(fsb);
         } else {
-            fsb = (GetSettings()->Network.DevNonce % 9);
-        }
-
-        if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
-            if (GetSettings()->Network.FrequencySubBand == 0) {
-                if (fsb < 9) {
-                    SetFrequencySubBand(fsb);
-                    dr = (_plan == US915 ? lora::DR_0 : lora::DR_2); // US or AU
-                } else {
-                    SetFrequencySubBand(dr4_fsb);
-                    dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
-                }
-            } else if (altdr && CountBits(_channelMask[4] > 0)) {
-                dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
-            } else {
-                dr = (_plan == US915 ? lora::DR_0 : lora::DR_2); // US or AU
-            }
+            SetFrequencySubBand(dr4_fsb);
         }
     }
+
+    if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
+        if (GetSettings()->Network.FrequencySubBand == 0) {
+            if (fsb < 9) {
+                dr = (_plan == US915 ? lora::DR_0 : lora::DR_2); // US or AU
+            } else {
+                dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
+            }
+        } else if (altdr && CountBits(_channelMask[4] > 0)) {
+            dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
+        } else {
+            dr = (_plan == US915 ? lora::DR_0 : lora::DR_2); // US or AU
+        }
+    }
+    
 
     return dr;
 }

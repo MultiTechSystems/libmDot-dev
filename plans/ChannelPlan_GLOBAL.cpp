@@ -2348,13 +2348,19 @@ uint8_t lora::ChannelPlan_GLOBAL::GetJoinDatarate() {
             fsb = (GetSettings()->Network.DevNonce % 9);
         }
 
+        if (GetSettings()->Network.FrequencySubBand == 0) {
+            if (fsb < 9) {
+                SetFrequencySubBand(fsb);
+            } else {
+                SetFrequencySubBand(dr4_fsb);
+            }
+        }
+
         if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
             if (GetSettings()->Network.FrequencySubBand == 0) {
                 if (fsb < 9) {
-                    SetFrequencySubBand(fsb);
                     dr = (_plan == US915 ? lora::DR_0 : lora::DR_2); // US or AU
                 } else {
-                    SetFrequencySubBand(dr4_fsb);
                     dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
                 }
             } else if (altdr && CountBits(_channelMask[4] > 0)) {
