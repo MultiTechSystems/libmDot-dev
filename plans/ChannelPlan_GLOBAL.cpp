@@ -1184,6 +1184,10 @@ uint8_t ChannelPlan_GLOBAL::HandleJoinAccept(const uint8_t* buffer, uint8_t size
             for (int i = 13; i < size - 5; i += 2) {
                 SetChannelMask((i-13)/2, buffer[i+1] << 8 | buffer[i]);
             }
+
+            if (GetSettings()->Session.TxDatarate == GetMaxDatarate() && GetChannelMask()[4] == 0x0) {
+                GetSettings()->Session.TxDatarate = GetMaxDatarate() - 1;
+            }
         } else {
             uint8_t fsb = 0;
 
@@ -1371,6 +1375,8 @@ Channel ChannelPlan_GLOBAL::GetChannel(int8_t index) {
 }
 
 uint8_t ChannelPlan_GLOBAL::SetFrequencySubBand(uint8_t sub_band) {
+
+    logDebug("*** SET FSB %d ***", sub_band);
 
     if (IsPlanFixed()) {
         _txFrequencySubBand = sub_band;
@@ -2226,6 +2232,10 @@ uint8_t ChannelPlan_GLOBAL::GetNextChannel()
         }
         GetRadio()->SetChannel(GetSettings()->Network.TxFrequency);
         return LORA_OK;
+    }
+
+    if (IsPlanFixed() && GetSettings()->Session.TxDatarate == GetMaxDatarate() && GetChannelMask()[4] == 0x0) {
+        GetSettings()->Session.TxDatarate = GetMaxDatarate() - 1;
     }
 
     uint8_t start = 0;
