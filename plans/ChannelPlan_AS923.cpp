@@ -114,7 +114,9 @@ void ChannelPlan_AS923::Init() {
 
     GetSettings()->Session.UplinkDwelltime = 1;
 
+    _defaultRx2Frequency = AS923_RX2_FREQ + AS923_FREQ_OFFSET_HZ;
     GetSettings()->Session.Rx2Frequency = AS923_RX2_FREQ + AS923_FREQ_OFFSET_HZ;
+    _defaultRx2Datarate = DR_2;
     GetSettings()->Session.Rx2DatarateIndex = DR_2;
 
     GetSettings()->Session.BeaconFrequency = AS923_BEACON_FREQ + AS923_FREQ_OFFSET_HZ;
@@ -939,13 +941,10 @@ uint8_t ChannelPlan_AS923::HandleMacCommand(uint8_t* payload, uint8_t& index) {
         case SRV_MAC_TX_PARAM_SETUP_REQ: {
             uint8_t eirp_dwell = payload[index++];
 
-            GetSettings()->Session.DownlinkDwelltime = eirp_dwell >> 5 & 0x01;
-            GetSettings()->Session.UplinkDwelltime = eirp_dwell >> 4 & 0x01;
+            GetSettings()->Session.DownlinkDwelltime = (eirp_dwell >> 5) & 0x01;
+            GetSettings()->Session.UplinkDwelltime = (eirp_dwell >> 4) & 0x01;
             //change data rate with if dwell time changes
-            if(GetSettings()->Session.UplinkDwelltime == 0) {
-                _minDatarate = lora::DR_0;
-            } else {
-                _minDatarate = lora::DR_2;
+            if(GetSettings()->Session.UplinkDwelltime == 1) {
                 if(GetSettings()->Session.TxDatarate < lora::DR_2) {
                     GetSettings()->Session.TxDatarate = lora::DR_2;
                     logDebug("Datarate is now DR%d",GetSettings()->Session.TxDatarate);
@@ -955,7 +954,9 @@ uint8_t ChannelPlan_AS923::HandleMacCommand(uint8_t* payload, uint8_t& index) {
             GetSettings()->Session.Max_EIRP = MAX_ERP_VALUES[(eirp_dwell & 0x0F)];
             logDebug("buffer index %d", GetSettings()->Session.CommandBufferIndex);
 
-            GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
+            if (GetSettings()->Session.TxPower > GetSettings()->Session.Max_EIRP) {
+                GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
+            }
 
             if (GetSettings()->Session.CommandBufferIndex < std::min<int>(GetMaxPayloadSize(), COMMANDS_BUFFER_SIZE)) {
                 logDebug("Add tx param setup mac cmd to buffer");
@@ -974,13 +975,7 @@ uint8_t ChannelPlan_AS923::HandleMacCommand(uint8_t* payload, uint8_t& index) {
 }
 
 void ChannelPlan_AS923::DecrementDatarate() {
-    if(GetSettings()->Session.UplinkDwelltime == 0) {
-        _minDatarate = lora::DR_0;
-    } else {
-        _minDatarate = lora::DR_2;
-    }
-
-    if (GetSettings()->Session.TxDatarate > _minDatarate) {
+    if (GetSettings()->Session.TxDatarate > GetMinDatarate()) {
         GetSettings()->Session.TxDatarate--;
     }
 }

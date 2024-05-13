@@ -1,10 +1,6 @@
 {
     "name": "mts-lora",
     "config": {
-        "radio-stack-size": {
-            "macro_name": "LORA_RADIO_STACK_SIZE",
-            "value": 1280
-        },
         "radio-pin-reset": {
             "macro_name": "LORA_RADIO_PIN_RESET",
             "value": "LORA_RESET"
@@ -49,21 +45,25 @@
             "macro_name": "LORA_RADIO_PIN_BUSY",
             "value": "LORA_BUSY"
         },
-        "main-stack-size" : {
-            "macro_name": "MBED_CONF_APP_MAIN_STACK_SIZE",
-            "value": 16384
+        "rf-switch-pin": {
+            "macro_name": "LORA_RADIO_RF_SW",
+            "value": "RF_SW_CTRL"
         },
         "use-sx1262": {
             "macro_name": "USE_SX1262",
             "value": 0
+        },
+        "lora-radio-stack-size": {
+            "macro_name": "LORA_RADIO_STACK_SIZE",
+            "value": 1280
         }
     },
     "target_overrides": {
-        "XDOT_L151CC": {
-            "radio-stack-size": 1280
-        },
         "MAX32670EVKIT": {
-            "use-sx1262": 1
+            "use-sx1262": true
+        },
+        "XDOT_MAX32670": {
+            "use-sx1262": true
         }
     }
 }

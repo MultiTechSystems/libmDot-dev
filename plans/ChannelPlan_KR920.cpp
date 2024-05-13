@@ -90,6 +90,9 @@ void ChannelPlan_KR920::Init() {
     _numChans500k = 0;
     _numDefaultChans = KR920_DEFAULT_NUM_CHANS;
 
+    _defaultRx2Frequency = 921900000;
+    _defaultRx2Datarate = DR_0;
+
     GetSettings()->Session.Rx2Frequency = 921900000;
     GetSettings()->Session.Rx2DatarateIndex = DR_0;
 

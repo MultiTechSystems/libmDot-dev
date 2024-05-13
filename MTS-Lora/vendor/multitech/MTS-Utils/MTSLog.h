@@ -3,18 +3,18 @@
 
 #include <string>
 
-inline const char* className(const std::string& prettyFunction)
+inline std::string className(const std::string& prettyFunction)
 {
     size_t colons = prettyFunction.find_last_of("::");
     if (colons == std::string::npos)
-        return "";
+        return std::string("");
     size_t begin = prettyFunction.substr(0,colons).rfind(" ") + 1;
     size_t end = colons - begin;
 
-    return prettyFunction.substr(begin,end).c_str();
+    return std::string(prettyFunction.substr(begin,end));
 }
 
-#define __CLASSNAME__ className(__PRETTY_FUNCTION__)
+#define __CLASSNAME__ className(__PRETTY_FUNCTION__).c_str()
 
 #ifdef MTS_TIMESTAMP_LOG
 #define __LOG__(logLevel, format, ...)                                   \

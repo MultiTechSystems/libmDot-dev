@@ -21,7 +21,7 @@
 using namespace lora;
 
 // MWF - changed EU868_TX_POWERS to match final 1.0.2 regional spec
-const uint8_t ChannelPlan_EU868::EU868_TX_POWERS[] = { 16, 14, 12, 10, 8, 6, 4, 2 };
+const uint8_t ChannelPlan_EU868::EU868_TX_POWERS[] = { 16, 14, 12, 9, 8, 6, 4, 2 };
 const uint8_t ChannelPlan_EU868::EU868_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_EU868::EU868_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -93,6 +93,9 @@ void ChannelPlan_EU868::Init() {
     _numChans500k = 0;
 
     _numDefaultChans = EU868_DEFAULT_NUM_CHANS;
+
+    _defaultRx2Frequency = EU868_RX2_FREQ;
+    _defaultRx2Datarate = DR_0;
 
     GetSettings()->Session.Rx2Frequency = EU868_RX2_FREQ;
     GetSettings()->Session.Rx2DatarateIndex = DR_0;

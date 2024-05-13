@@ -15,43 +15,45 @@
 *
 ***********************************************************************/
 
-#include "ChannelPlan_US915.h"
+#include "ChannelPlan_CN470.h"
 #include "limits.h"
 
 using namespace lora;
 
-const uint8_t ChannelPlan_US915::US915_TX_POWERS[] = { 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0 };
-const uint8_t ChannelPlan_US915::US915_MAX_PAYLOAD_SIZE[] =          { 11, 53, 125, 242, 242, 0, 0, 0, 53, 129, 242, 242, 242, 242, 0, 0 };
-const uint8_t ChannelPlan_US915::US915_MAX_PAYLOAD_SIZE_REPEATER[] = { 11, 53, 125, 222, 222, 0, 0, 0, 33, 109, 222, 222, 222, 222, 0, 0 };
+const uint8_t ChannelPlan_CN470::CN470_TX_POWERS[] = { 17, 16, 14, 12, 10, 7, 5, 2, 0 };
 
-ChannelPlan_US915::ChannelPlan_US915()
+// CN470 regulations limit to 1s time-on-air, this reduces DR0 and DR1
+const uint8_t ChannelPlan_CN470::CN470_MAX_PAYLOAD_SIZE[] =          { 0, 23, 51, 115, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+const uint8_t ChannelPlan_CN470::CN470_MAX_PAYLOAD_SIZE_REPEATER[] = { 0, 23, 51, 115, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+ChannelPlan_CN470::ChannelPlan_CN470()
 :
   ChannelPlan(NULL, NULL)
 {
     _beaconSize = sizeof(BCNPayload);
 }
 
-ChannelPlan_US915::ChannelPlan_US915(Settings* settings)
+ChannelPlan_CN470::ChannelPlan_CN470(Settings* settings)
 :
   ChannelPlan(NULL, settings)
 {
     _beaconSize = sizeof(BCNPayload);
 }
 
-ChannelPlan_US915::ChannelPlan_US915(SxRadio* radio, Settings* settings)
+ChannelPlan_CN470::ChannelPlan_CN470(SxRadio* radio, Settings* settings)
 :
   ChannelPlan(radio, settings)
 {
     _beaconSize = sizeof(BCNPayload);
 }
 
-ChannelPlan_US915::~ChannelPlan_US915() {
+ChannelPlan_CN470::~ChannelPlan_CN470() {
 
 }
 
-void ChannelPlan_US915::Init() {
-    _plan = US915;
-    _planName = "US915";
+void ChannelPlan_CN470::Init() {
+    _plan = CN470;
+    _planName = "CN470";
 
     _datarates.clear();
     _channels.clear();
@@ -67,90 +69,71 @@ void ChannelPlan_US915::Init() {
     _maxTxPower = 30;
     _minTxPower = 0;
 
-    _minFrequency = US915_FREQ_MIN;
-    _maxFrequency = US915_FREQ_MAX;
+    _minFrequency = CN470_FREQ_MIN;
+    _maxFrequency = CN470_FREQ_MAX;
 
-    TX_POWERS = US915_TX_POWERS;
-    MAX_PAYLOAD_SIZE = US915_MAX_PAYLOAD_SIZE;
-    MAX_PAYLOAD_SIZE_REPEATER = US915_MAX_PAYLOAD_SIZE_REPEATER;
+    TX_POWERS = CN470_TX_POWERS;
+    MAX_PAYLOAD_SIZE = CN470_MAX_PAYLOAD_SIZE;
+    MAX_PAYLOAD_SIZE_REPEATER = CN470_MAX_PAYLOAD_SIZE_REPEATER;
 
-    band.FrequencyMin = US915_FREQ_MIN;
-    band.FrequencyMax = US915_FREQ_MAX;
+    band.FrequencyMin = CN470_FREQ_MIN;
+    band.FrequencyMax = CN470_FREQ_MAX;
 
-    _freqUBase125k = US915_125K_FREQ_BASE;
-    _freqUStep125k = US915_125K_FREQ_STEP;
-    _freqUBase500k = US915_500K_FREQ_BASE;
-    _freqUStep500k = US915_500K_FREQ_STEP;
-    _freqDBase500k = US915_500K_DBASE;
-    _freqDStep500k = US915_500K_DSTEP;
+    _freqUBase125k = CN470_125K_FREQ_BASE;
+    _freqUStep125k = CN470_125K_FREQ_STEP;
+    _freqDBase500k = CN470_125K_DBASE;
+    _freqDStep500k = CN470_125K_DSTEP;
 
-    _defaultRx2Frequency = US915_500K_DBASE;
-    _defaultRx2Datarate = DR_8;
+    _defaultRx2Frequency = CN470_FREQ_RX2;
+    _defaultRx2Datarate = DR_0;
 
-    GetSettings()->Session.Rx2Frequency = US915_500K_DBASE;
+    GetSettings()->Session.Rx2Frequency = CN470_FREQ_RX2;
 
-    GetSettings()->Session.BeaconFrequency = US915_BEACON_FREQ_BASE;
+    GetSettings()->Session.BeaconFrequency = CN470_BEACON_FREQ_BASE;
     GetSettings()->Session.BeaconFreqHop = true;
-    GetSettings()->Session.PingSlotFrequency = US915_BEACON_FREQ_BASE;
-    GetSettings()->Session.PingSlotDatarateIndex = US915_BEACON_DR;
+    GetSettings()->Session.PingSlotFrequency = CN470_BEACON_FREQ_BASE;
+    GetSettings()->Session.PingSlotDatarateIndex = CN470_BEACON_DR;
     GetSettings()->Session.PingSlotFreqHop = true;
 
-    _minDatarate = US915_MIN_DATARATE;
-    _maxDatarate = US915_MAX_DATARATE;
-    _minRx2Datarate = DR_8;
-    _maxRx2Datarate = DR_13;
-    _minDatarateOffset = US915_MIN_DATARATE_OFFSET;
-    _maxDatarateOffset = US915_MAX_DATARATE_OFFSET;
+    _minDatarate = CN470_MIN_DATARATE;
+    _maxDatarate = CN470_MAX_DATARATE;
+    _minRx2Datarate = DR_0;
+    _maxRx2Datarate = DR_5;
+    _minDatarateOffset = CN470_MIN_DATARATE_OFFSET;
+    _maxDatarateOffset = CN470_MAX_DATARATE_OFFSET;
 
-    _numChans125k = US915_125K_NUM_CHANS;
-    _numChans500k = US915_500K_NUM_CHANS;
+    _numChans125k = CN470_125K_NUM_CHANS;
+    _numChans500k = CN470_500K_NUM_CHANS;
 
     logInfo("Initialize channels...");
 
-    SetNumberOfChannels(US915_125K_NUM_CHANS + US915_500K_NUM_CHANS, false);
+    SetNumberOfChannels(CN470_125K_NUM_CHANS + CN470_500K_NUM_CHANS, false);
 
-    dr.SpreadingFactor = SF_10;
+    dr.SpreadingFactor = SF_12;
 
     logInfo("Initialize datarates...");
 
-    // Add DR0-3
+    // Add DR0-5
     while (dr.SpreadingFactor >= SF_7) {
         AddDatarate(-1, dr);
         dr.SpreadingFactor--;
         dr.Index++;
     }
 
-    // Add DR4
-    dr.SpreadingFactor = SF_8;
-    dr.Bandwidth = BW_500;
-    AddDatarate(-1, dr);
-    dr.Index++;
-
-    // Skip DR5-7 RFU
+    // Skip DR6-15 RFU
     dr.SpreadingFactor = SF_INVALID;
-    AddDatarate(-1, dr), dr.Index++;
-    AddDatarate(-1, dr), dr.Index++;
-    AddDatarate(-1, dr), dr.Index++;
+    while (dr.Index++ <= DR_15) {
+        AddDatarate(-1, dr);
+    }
 
-    band.PowerMax = 30;
+
+    band.PowerMax = 17;
 
     band.TimeOffEnd = 0;
 
     AddDutyBand(-1, band);
 
-    GetSettings()->Session.Rx2DatarateIndex = DR_8;
-
-    // Add DR8-13
-    dr.SpreadingFactor = SF_12;
-    while (dr.SpreadingFactor >= SF_7) {
-        AddDatarate(-1, dr);
-        dr.SpreadingFactor--;
-        dr.Index++;
-    }
-
-    // Skip DR14-15 RFU
-    dr.SpreadingFactor = SF_INVALID;
-    AddDatarate(-1, dr), AddDatarate(-1, dr);
+    GetSettings()->Session.Rx2DatarateIndex = DR_0;
 
     GetSettings()->Session.TxDatarate = DR_0;
     GetSettings()->Session.TxPower = GetSettings()->Network.TxPower;
@@ -159,35 +142,32 @@ void ChannelPlan_US915::Init() {
 
 }
 
-uint8_t ChannelPlan_US915::HandleJoinAccept(const uint8_t* buffer, uint8_t size) {
+void ChannelPlan_CN470::DefaultLBT() {
+    _LBT_TimeUs = 5000;
+    _LBT_Threshold = -80;
+}
+
+uint8_t ChannelPlan_CN470::HandleJoinAccept(const uint8_t* buffer, uint8_t size) {
 
     if (size > 17 && buffer[28] == 0x01) {
-        for (int i = 13; i < size - 5; i += 2) {
-            SetChannelMask((i-13)/2, buffer[i+1] << 8 | buffer[i]);
-        }
-
-        if (GetSettings()->Session.TxDatarate == GetMaxDatarate() && GetChannelMask()[4] == 0x0) {
-            GetSettings()->Session.TxDatarate = GetMaxDatarate() - 1;
-        }
-    } else {
-        uint8_t fsb = 0;
-
-        if (_txChannel < 64)
-            fsb = (_txChannel / 8);
-        else
-            fsb = (_txChannel % 8);
-
-        // Reset state of random channels to enable the last used FSB for the first tx to confirm network settings
-        _randomChannel.ChannelState125K(0);
-        _randomChannel.MarkAllSubbandChannelsUnused(fsb);
-        _randomChannel.ChannelState500K(1 << fsb);
-        EnableDefaultChannels();
+        // Channel Mask is not supported, ignore if included
     }
+
+    uint8_t fsb = 0;
+
+    if (_txChannel < 96)
+        fsb = (_txChannel / 8);
+
+    // Reset state of random channels to enable the last used FSB for the first tx to confirm network settings
+    _randomChannel.ChannelState125K(0);
+    _randomChannel.ChannelState500K(0);
+    _randomChannel.MarkAllSubbandChannelsUnused(fsb);
+    EnableDefaultChannels();
 
     return LORA_OK;
 }
 
-void ChannelPlan_US915::SetNumberOfChannels(uint8_t channels, bool resize) {
+void ChannelPlan_CN470::SetNumberOfChannels(uint8_t channels, bool resize) {
     uint8_t newsize = ((channels - 1) / CHAN_MASK_SIZE) + 1;
 
     if (resize) {
@@ -199,7 +179,7 @@ void ChannelPlan_US915::SetNumberOfChannels(uint8_t channels, bool resize) {
 
 }
 
-bool ChannelPlan_US915::IsChannelEnabled(uint8_t channel) {
+bool ChannelPlan_CN470::IsChannelEnabled(uint8_t channel) {
     uint8_t index = channel / CHAN_MASK_SIZE;
     uint8_t shift = channel % CHAN_MASK_SIZE;
 
@@ -213,40 +193,30 @@ bool ChannelPlan_US915::IsChannelEnabled(uint8_t channel) {
     return (_channelMask[index] & (1 << shift)) == (1 << shift);
 }
 
-uint8_t ChannelPlan_US915::GetMinDatarate() {
-    if (GetSettings()->Network.Mode == lora::PEER_TO_PEER)
-#if defined(CERTIFICATION_DATARATES)
-        return 0;
-#else
-        return 8;
-#endif
-    else
-        return _minDatarate;
+uint8_t ChannelPlan_CN470::GetMinDatarate() {
+    return _minDatarate;
 }
 
-uint8_t ChannelPlan_US915::GetMaxDatarate() {
-    if (GetSettings()->Network.Mode == lora::PEER_TO_PEER)
-        return 13;
-    else
-        return _maxDatarate;
+uint8_t ChannelPlan_CN470::GetMaxDatarate() {
+    return _maxDatarate;
 }
 
-uint8_t ChannelPlan_US915::SetRx1Offset(uint8_t offset) {
+uint8_t ChannelPlan_CN470::SetRx1Offset(uint8_t offset) {
     GetSettings()->Session.Rx1DatarateOffset = offset;
     return LORA_OK;
 }
 
-uint8_t ChannelPlan_US915::SetRx2Frequency(uint32_t freq) {
+uint8_t ChannelPlan_CN470::SetRx2Frequency(uint32_t freq) {
     GetSettings()->Session.Rx2Frequency = freq;
     return LORA_OK;
 }
 
-uint8_t ChannelPlan_US915::SetRx2DatarateIndex(uint8_t index) {
+uint8_t ChannelPlan_CN470::SetRx2DatarateIndex(uint8_t index) {
     GetSettings()->Session.Rx2DatarateIndex = index;
     return LORA_OK;
 }
 
-uint8_t ChannelPlan_US915::SetTxConfig() {
+uint8_t ChannelPlan_CN470::SetTxConfig() {
 
     uint8_t band = GetDutyBand(GetChannel(_txChannel).Frequency);
     Datarate txDr = GetDatarate(GetSettings()->Session.TxDatarate);
@@ -256,20 +226,14 @@ uint8_t ChannelPlan_US915::SetTxConfig() {
     int8_t pwr = GetSettings()->Session.TxPower;
 
     if (txDr.Bandwidth == BW_125) {
-        // spec states that if < 50 125kHz channels are enabled, power is limited to 21dB conducted
+
         chans_enabled += CountBits(_channelMask[0]);
         chans_enabled += CountBits(_channelMask[1]);
         chans_enabled += CountBits(_channelMask[2]);
         chans_enabled += CountBits(_channelMask[3]);
+        chans_enabled += CountBits(_channelMask[4]);
+        chans_enabled += CountBits(_channelMask[5]);
 
-        if (chans_enabled < 50 && pwr > 21) {
-            pwr = 21;
-        }
-    }
-
-    // Antenna gain is allowed up to +6 dBi, gain above 6 must be reduced from the conducted output
-    if (pwr + GetSettings()->Network.AntennaGain >= max_pwr + 6 && GetSettings()->Network.AntennaGain > 6) {
-        max_pwr -= (GetSettings()->Network.AntennaGain - 6);
     }
 
     pwr = std::min < int8_t > (pwr, max_pwr);
@@ -313,7 +277,7 @@ uint8_t ChannelPlan_US915::SetTxConfig() {
 }
 
 
-uint8_t ChannelPlan_US915::AddChannel(int8_t index, Channel channel) {
+uint8_t ChannelPlan_CN470::AddChannel(int8_t index, Channel channel) {
     logTrace("Add Channel %d : %lu : %02x %d", index, channel.Frequency, channel.DrRange.Value, _channels.size());
 
     assert(index < (int) _channels.size());
@@ -327,56 +291,53 @@ uint8_t ChannelPlan_US915::AddChannel(int8_t index, Channel channel) {
     return LORA_OK;
 }
 
-Channel ChannelPlan_US915::GetChannel(int8_t index) {
+Channel ChannelPlan_CN470::GetChannel(int8_t index) {
     Channel chan;
     memset(&chan, 0, sizeof(Channel));
 
     if (_channels.size() > 0) {
         chan = _channels[index];
     } else {
-        if (index < 64) {
+        if (index < 96) {
             chan.Index = index;
             chan.DrRange.Fields.Min = _minDatarate;
-            chan.DrRange.Fields.Max = _maxDatarate - 1;
-            chan.Frequency = _freqUBase125k + (_freqUStep125k * index);
-        } else if (index < 72) {
-            chan.Index = index;
-            chan.DrRange.Fields.Min = _maxDatarate;
             chan.DrRange.Fields.Max = _maxDatarate;
-            chan.Frequency = _freqUBase500k + (_freqUStep500k * (index - 64));
+            chan.Frequency = _freqUBase125k + (_freqUStep125k * index);
         }
     }
 
     return chan;
 }
 
-uint8_t ChannelPlan_US915::SetFrequencySubBand(uint8_t sub_band) {
+uint8_t ChannelPlan_CN470::SetFrequencySubBand(uint8_t sub_band) {
 
     _txFrequencySubBand = sub_band;
 
-    if (sub_band > 0 && sub_band < 9) {
+    if (sub_band > 0 && sub_band < 13) {
         SetChannelMask(0, 0x0000);
         SetChannelMask(1, 0x0000);
         SetChannelMask(2, 0x0000);
         SetChannelMask(3, 0x0000);
         SetChannelMask(4, 0x0000);
+        SetChannelMask(5, 0x0000);
         SetChannelMask((sub_band - 1) / 2, (sub_band % 2) ? 0x00FF : 0xFF00);
-        SetChannelMask(4, 1 << (sub_band - 1));
+
     } else {
         SetChannelMask(0, 0xFFFF);
         SetChannelMask(1, 0xFFFF);
         SetChannelMask(2, 0xFFFF);
         SetChannelMask(3, 0xFFFF);
-        SetChannelMask(4, 0x00FF);
+        SetChannelMask(4, 0xFFFF);
+        SetChannelMask(5, 0xFFFF);
     }
 
     return LORA_OK;
 }
 
 
-void ChannelPlan_US915::LogRxWindow(uint8_t wnd) {
+void ChannelPlan_CN470::LogRxWindow(uint8_t wnd) {
 
-#if defined(MTS_DEBUG)
+#if 1 // defined(MTS_DEBUG)
     RxWindow rxw = GetRxWindow(wnd);
     Datarate rxDr = GetDatarate(rxw.DatarateIndex);
     uint8_t bw = rxDr.Bandwidth;
@@ -393,7 +354,7 @@ void ChannelPlan_US915::LogRxWindow(uint8_t wnd) {
 
 }
 
-RxWindow ChannelPlan_US915::GetRxWindow(uint8_t window, int8_t id) {
+RxWindow ChannelPlan_CN470::GetRxWindow(uint8_t window, int8_t id) {
     RxWindow rxw;
     int index = 0;
 
@@ -403,32 +364,19 @@ RxWindow ChannelPlan_US915::GetRxWindow(uint8_t window, int8_t id) {
     } else {
         switch (window) {
         case RX_1:
-            if (_txChannel < _numChans125k) {
-                if (GetSettings()->Network.Mode == lora::PRIVATE_MTS)
-                    rxw.Frequency = _freqDBase500k + (_txChannel / 8) * _freqDStep500k;
-                else
-                    rxw.Frequency = _freqDBase500k + (_txChannel % 8) * _freqDStep500k;
-            } else
-                rxw.Frequency = _freqDBase500k + (_txChannel - _numChans125k) * _freqDStep500k;
+            rxw.Frequency = _freqDBase500k + (_txChannel % 48) * _freqDStep500k;
 
-            if (GetSettings()->Session.TxDatarate <= DR_4) {
-                index = GetSettings()->Session.TxDatarate + 10 - GetSettings()->Session.Rx1DatarateOffset;
-
-                if (index < DR_8)
-                    index = DR_8;
-                if (index > DR_13)
-                    index = DR_13;
-            } else if (GetSettings()->Session.TxDatarate >= DR_8) {
+            if (GetSettings()->Session.TxDatarate > GetSettings()->Session.Rx1DatarateOffset) {
                 index = GetSettings()->Session.TxDatarate - GetSettings()->Session.Rx1DatarateOffset;
-                if (index < DR_8)
-                    index = DR_8;
+            } else {
+                index = 0;
             }
 
             break;
 
         case RX_BEACON:
             rxw.Frequency = GetSettings()->Session.BeaconFrequency;
-            index = US915_BEACON_DR;
+            index = CN470_BEACON_DR;
             break;
 
         case RX_SLOT:
@@ -443,16 +391,7 @@ RxWindow ChannelPlan_US915::GetRxWindow(uint8_t window, int8_t id) {
 
         // RX2, RXC, RX_TEST, etc..
         default:
-            if (GetSettings()->Network.Mode == lora::PRIVATE_MTS) {
-                if (_txChannel < _numChans125k) {
-                    rxw.Frequency = _freqDBase500k + (_txChannel / 8) * _freqDStep500k;
-                } else {
-                    rxw.Frequency = _freqDBase500k + (_txChannel % 8) * _freqDStep500k;
-                }
-            } else {
-                rxw.Frequency = GetSettings()->Session.Rx2Frequency;
-            }
-
+            rxw.Frequency = GetSettings()->Session.Rx2Frequency;
             index = GetSettings()->Session.Rx2DatarateIndex;
         }
     }
@@ -462,7 +401,7 @@ RxWindow ChannelPlan_US915::GetRxWindow(uint8_t window, int8_t id) {
     return rxw;
 }
 
-uint8_t ChannelPlan_US915::HandleRxParamSetup(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
+uint8_t ChannelPlan_CN470::HandleRxParamSetup(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
     status = 0x07;
     int8_t datarate = 0;
     int8_t drOffset = 0;
@@ -504,21 +443,21 @@ uint8_t ChannelPlan_US915::HandleRxParamSetup(const uint8_t* payload, uint8_t in
     return LORA_OK;
 }
 
-uint8_t ChannelPlan_US915::HandleNewChannel(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
+uint8_t ChannelPlan_CN470::HandleNewChannel(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
 
-    // Not Supported in US915
+    // Not Supported in CN470
     status = 0;
     return LORA_UNSUPPORTED;
 }
 
-uint8_t ChannelPlan_US915::HandleDownlinkChannelReq(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
+uint8_t ChannelPlan_CN470::HandleDownlinkChannelReq(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
 
-    // Not Supported in US915
+    // Not Supported in CN470
     status = 0;
     return LORA_UNSUPPORTED;
 }
 
-uint8_t ChannelPlan_US915::HandlePingSlotChannelReq(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
+uint8_t ChannelPlan_CN470::HandlePingSlotChannelReq(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
     uint8_t datarate = 0;
     uint32_t freq = 0;
     bool freqHop = false;
@@ -534,7 +473,7 @@ uint8_t ChannelPlan_US915::HandlePingSlotChannelReq(const uint8_t* payload, uint
 
     if (freq == 0U) {
         logInfo("Received request to reset ping slot frequency to default");
-        freq = US915_BEACON_FREQ_BASE;
+        freq = CN470_BEACON_FREQ_BASE;
         freqHop = true;
     } else if (!CheckRfFrequency(freq)) {
         logInfo("Freq KO");
@@ -558,7 +497,7 @@ uint8_t ChannelPlan_US915::HandlePingSlotChannelReq(const uint8_t* payload, uint
     return LORA_OK;
 }
 
-uint8_t ChannelPlan_US915::HandleBeaconFrequencyReq(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
+uint8_t ChannelPlan_CN470::HandleBeaconFrequencyReq(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
     uint32_t freq = 0;
     bool freqHop = false;
 
@@ -571,7 +510,7 @@ uint8_t ChannelPlan_US915::HandleBeaconFrequencyReq(const uint8_t* payload, uint
 
     if (freq == 0U) {
         logInfo("Received request to reset beacon frequency to default");
-        freq = US915_BEACON_FREQ_BASE;
+        freq = CN470_BEACON_FREQ_BASE;
         freqHop = true;
     } else if (!CheckRfFrequency(freq)) {
         logInfo("Freq KO");
@@ -590,7 +529,7 @@ uint8_t ChannelPlan_US915::HandleBeaconFrequencyReq(const uint8_t* payload, uint
 }
 
 
-uint8_t ChannelPlan_US915::HandleAdrCommand(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
+uint8_t ChannelPlan_CN470::HandleAdrCommand(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
 
     uint8_t power = 0;
     uint8_t datarate = 0;
@@ -620,11 +559,9 @@ uint8_t ChannelPlan_US915::HandleAdrCommand(const uint8_t* payload, uint8_t inde
     //
     // Remark MaxTxPower = 0 and MinTxPower = 14
     //
-    if (power != 0xF && power > 14) {
+    if (power != 0xF && power > 8) {
         status &= 0xFB; // TxPower KO
     }
-
-    uint16_t t_125k = 0; //used only in ctrl case 5
 
     switch (ctrl) {
         case 0:
@@ -632,26 +569,8 @@ uint8_t ChannelPlan_US915::HandleAdrCommand(const uint8_t* payload, uint8_t inde
         case 2:
         case 3:
         case 4:
-            SetChannelMask(ctrl, mask);
-            break;
-
         case 5:
-            if(mask != 0) {
-                for(int i = 0; i < 8; i++) {  //0 - 7 bits
-                    if(((mask >> i) & 1) == 1) { //if bit in mask is a one
-                        t_125k |= (0xff << ((i % 2) * 8)); // this does either 0xff00 or 0x00ff to t_125k
-                    }
-                    if(i % 2 == 1) { // if 1 then both halfs of the mask were set
-                        SetChannelMask(i/2, t_125k);
-                        t_125k = 0; //reset mask for next two bits
-                    }
-                }
-                SetChannelMask(4, mask);
-            } else {
-                status &= 0xFE; // ChannelMask KO
-                logWarning("Rejecting mask, will not disable all channels");
-                return LORA_ERROR;
-            }
+            SetChannelMask(ctrl, mask);
             break;
 
         case 6:
@@ -660,18 +579,11 @@ uint8_t ChannelPlan_US915::HandleAdrCommand(const uint8_t* payload, uint8_t inde
             SetChannelMask(1, 0xFFFF);
             SetChannelMask(2, 0xFFFF);
             SetChannelMask(3, 0xFFFF);
-            SetChannelMask(4, mask);
+            SetChannelMask(4, 0xFFFF);
+            SetChannelMask(5, 0xFFFF);
             break;
 
         case 7:
-            // disable all 125 kHz channels
-            SetChannelMask(0, 0x0);
-            SetChannelMask(1, 0x0);
-            SetChannelMask(2, 0x0);
-            SetChannelMask(3, 0x0);
-            SetChannelMask(4, mask);
-            break;
-
         default:
             logWarning("rejecting RFU or unknown control value %d", ctrl);
             status &= 0xFE; // ChannelMask KO
@@ -697,7 +609,7 @@ uint8_t ChannelPlan_US915::HandleAdrCommand(const uint8_t* payload, uint8_t inde
     return LORA_OK;
 }
 
-uint8_t ChannelPlan_US915::ValidateAdrConfiguration() {
+uint8_t ChannelPlan_CN470::ValidateAdrConfiguration() {
     uint8_t status = 0x07;
     uint8_t chans_enabled = 0;
     uint8_t datarate = GetSettings()->Session.TxDatarate;
@@ -713,27 +625,23 @@ uint8_t ChannelPlan_US915::ValidateAdrConfiguration() {
             status &= 0xFB; // TxPower KO
         }
     }
-    // at least 2 125kHz channels must be enabled
+    // at least 1 125kHz channels must be enabled
     chans_enabled += CountBits(_channelMask[0]);
     chans_enabled += CountBits(_channelMask[1]);
     chans_enabled += CountBits(_channelMask[2]);
     chans_enabled += CountBits(_channelMask[3]);
-    // Semtech reference (LoRaMac-node) enforces at least 2 channels
-    if (datarate < 4 && chans_enabled < 2) {
-        logWarning("ADR Channel Mask KO - at least 2 125kHz channels must be enabled");
-        status &= 0xFE; // ChannelMask KO
-    }
+    chans_enabled += CountBits(_channelMask[4]);
+    chans_enabled += CountBits(_channelMask[5]);
 
-    // if TXDR == 4 (SF8@500kHz) at least 1 500kHz channel must be enabled
-    if (datarate == DR_4 && (CountBits(_channelMask[4] & 0xFF) == 0)) {
-        logWarning("ADR Datarate KO - DR4 requires at least 1 500kHz channel enabled");
-        status &= 0xFD; // Datarate KO
+    if (chans_enabled == 0) {
+        logWarning("ADR Channel Mask KO - at least 1 125kHz channel must be enabled");
+        status &= 0xFE; // ChannelMask KO
     }
 
     return status;
 }
 
-uint32_t ChannelPlan_US915::GetTimeOffAir()
+uint32_t ChannelPlan_CN470::GetTimeOffAir()
 {
     uint32_t min = 0;
     auto now = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
@@ -754,7 +662,7 @@ uint32_t ChannelPlan_US915::GetTimeOffAir()
     return min;
 }
 
-std::vector<uint32_t> lora::ChannelPlan_US915::GetChannels() {
+std::vector<uint32_t> lora::ChannelPlan_CN470::GetChannels() {
     std::vector < uint32_t > chans;
 
     if (GetSettings()->Network.FrequencySubBand > 0) {
@@ -763,7 +671,6 @@ std::vector<uint32_t> lora::ChannelPlan_US915::GetChannels() {
         for (int8_t i = start; i < int8_t(start + chans_per_group); i++) {
             chans.push_back(GetChannel(i).Frequency);
         }
-        chans.push_back(GetChannel(_numChans125k + (GetSettings()->Network.FrequencySubBand - 1)).Frequency);
         chans.push_back(GetRxWindow(2).Frequency);
     } else {
         for (int8_t i = 0; i < _numChans; i++) {
@@ -775,7 +682,7 @@ std::vector<uint32_t> lora::ChannelPlan_US915::GetChannels() {
     return chans;
 }
 
-std::vector<uint8_t> lora::ChannelPlan_US915::GetChannelRanges() {
+std::vector<uint8_t> lora::ChannelPlan_CN470::GetChannelRanges() {
     std::vector < uint8_t > ranges;
 
     if (GetSettings()->Network.FrequencySubBand > 0) {
@@ -784,7 +691,6 @@ std::vector<uint8_t> lora::ChannelPlan_US915::GetChannelRanges() {
         for (int8_t i = start; i < int8_t(start + chans_per_group); i++) {
             ranges.push_back(GetChannel(i).DrRange.Value);
         }
-        ranges.push_back(GetChannel(_numChans125k + (GetSettings()->Network.FrequencySubBand - 1)).DrRange.Value);
         ranges.push_back(GetRxWindow(2).DatarateIndex);
     } else {
         for (int8_t i = 0; i < _numChans; i++) {
@@ -799,18 +705,16 @@ std::vector<uint8_t> lora::ChannelPlan_US915::GetChannelRanges() {
 
 }
 
-uint8_t ChannelPlan_US915::SetDutyBandDutyCycle(uint8_t band, uint16_t dutyCycle) {
+uint8_t ChannelPlan_CN470::SetDutyBandDutyCycle(uint8_t band, uint16_t dutyCycle) {
     return LORA_UNSUPPORTED;
 }
 
-void lora::ChannelPlan_US915::EnableDefaultChannels() {
+void lora::ChannelPlan_CN470::EnableDefaultChannels() {
     SetFrequencySubBand(GetSettings()->Network.FrequencySubBand);
 }
 
-uint8_t ChannelPlan_US915::GetNextChannel()
+uint8_t ChannelPlan_CN470::GetNextChannel()
 {
-	bool error = false;
-
     if (GetSettings()->Session.AggregatedTimeOffEnd != 0) {
         return LORA_AGGREGATED_DUTY_CYCLE;
     }
@@ -826,14 +730,8 @@ uint8_t ChannelPlan_US915::GetNextChannel()
             }
         }
 
-        _dutyBands[0].PowerMax = 26;
-
         GetRadio()->SetChannel(GetSettings()->Network.TxFrequency);
         return LORA_OK;
-    }
-
-    if (GetSettings()->Session.TxDatarate == GetMaxDatarate() && GetChannelMask()[4] == 0x0) {
-        GetSettings()->Session.TxDatarate = GetMaxDatarate() - 1;
     }
 
     uint8_t start = 0;
@@ -841,12 +739,8 @@ uint8_t ChannelPlan_US915::GetNextChannel()
     uint8_t nbEnabledChannels = 0;
     uint8_t *enabledChannels = new uint8_t[maxChannels];
 
-    if (GetTxDatarate().Bandwidth == BW_500) {
-        maxChannels = _numChans500k;
-        start = _numChans125k;
-    }
 
-// Search how many channels are enabled
+    // Search how many channels are enabled
     DatarateRange range;
     uint8_t dr_index = GetSettings()->Session.TxDatarate;
     auto now = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
@@ -870,16 +764,6 @@ uint8_t ChannelPlan_US915::GetNextChannel()
         }
     }
 
-    if (GetTxDatarate().Bandwidth == BW_500) {
-        _dutyBands[0].PowerMax = 26;
-    } else {
-        if (nbEnabledChannels < 50)
-            _dutyBands[0].PowerMax = 21;
-        else
-            _dutyBands[0].PowerMax = 30;
-    }
-
-    logInfo("Adjust PowerMax to %d", _dutyBands[0].PowerMax);
     logTrace("Number of available channels: %d", nbEnabledChannels);
 
     uint32_t freq = 0;
@@ -895,91 +779,54 @@ uint8_t ChannelPlan_US915::GetNextChannel()
         int16_t timeout = 10000;
         Timer tmr;
         tmr.start();
+        auto tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
 
-        while(std::chrono::duration_cast<std::chrono::milliseconds>(tmr.elapsed_time()).count() < timeout)
-        {
-            uint8_t channel = 0;
-            // grab the next channel if any are enabled
-            if(_randomChannel.NextChannel(enabledChannels, nbEnabledChannels, &channel)) {
-                freq = GetChannel(channel).Frequency;
+        for (uint8_t j = rand_r(0, nbEnabledChannels - 1); tm_ms < timeout; j++) {
+            tm_ms = duration_cast<milliseconds>(_dutyCycleTimer.elapsed_time()).count();
+            freq = GetChannel(enabledChannels[j]).Frequency;
 
-                if (GetRadio()->IsChannelFree(SxRadio::MODEM_LORA, freq, thres)) {
-                    _txChannel = channel;
-                    break;
-                }
-            }
-            else {
-            	error = true;
+            if (GetRadio()->IsChannelFree(SxRadio::MODEM_LORA, freq, thres)) {
+                _txChannel = enabledChannels[j];
+                break;
             }
         }
     } else {
-        uint8_t channel = 0;
-        if(_randomChannel.NextChannel(enabledChannels, nbEnabledChannels, &channel))  {
-            _txChannel = channel;
-            freq = GetChannel(_txChannel).Frequency;
-        }
-        else  {
-        	error = true;
-        }
+        uint8_t j = rand_r(0, nbEnabledChannels - 1);
+        _txChannel = enabledChannels[j];
+        freq = GetChannel(_txChannel).Frequency;
     }
 
-    if(error) {
-        logError("Unable to select a random channel");
-    }
-    else {
-        assert(freq != 0);
+    assert(freq != 0);
 
-        logDebug("Using channel %d : %d", _txChannel, freq);
-        GetRadio()->SetChannel(freq);
-    }
+    logDebug("Using channel %d : %d", _txChannel, freq);
+    GetRadio()->SetChannel(freq);
 
     delete [] enabledChannels;
     return LORA_OK;
 }
 
-uint8_t lora::ChannelPlan_US915::GetJoinDatarate() {
+uint8_t lora::ChannelPlan_CN470::GetJoinDatarate() {
     uint8_t dr = GetSettings()->Session.TxDatarate;
-    uint8_t fsb = 1;
-    uint8_t dr4_fsb = 1;
-    bool altdr = false;
-
-    altdr = (GetSettings()->Network.DevNonce % 2) == 0;
-
-    if ((GetSettings()->Network.DevNonce % 9) == 0) {
-        // set DR4 fsb to 1-8 incrementing every 9th join
-        dr4_fsb = ((GetSettings()->Network.DevNonce / 9) % 8) + 1;
-        fsb = 9;
-    } else {
-        fsb = (GetSettings()->Network.DevNonce % 9);
-    }
-
-    if (GetSettings()->Network.FrequencySubBand == 0) {
-        if (fsb < 9) {
-            SetFrequencySubBand(fsb);
-        } else {
-            SetFrequencySubBand(dr4_fsb);
-        }
-    }
+    int8_t cnt = GetSettings()->Network.DevNonce % 20;
 
     if (GetSettings()->Test.DisableRandomJoinDatarate == lora::OFF) {
-        if (GetSettings()->Network.FrequencySubBand == 0) {
-            if (fsb < 9) {
-                dr = (_plan == US915 ? lora::DR_0 : lora::DR_2); // US or AU
-            } else {
-                dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
-            }
-        } else if (altdr && CountBits(_channelMask[4] > 0)) {
-            dr = (_plan == US915 ? lora::DR_4 : lora::DR_6); // US or AU
+        if ((cnt % 16) == 0) {
+            dr = lora::DR_1;
+        } else if ((cnt % 12) == 0) {
+            dr = lora::DR_2;
+        } else if ((cnt % 8) == 0) {
+            dr = lora::DR_3;
+        } else if ((cnt % 4) == 0) {
+            dr = lora::DR_4;
         } else {
-            dr = (_plan == US915 ? lora::DR_0 : lora::DR_2); // US or AU
+            dr = lora::DR_5;
         }
-        altdr = !altdr;
     }
 
     return dr;
 }
 
-uint8_t ChannelPlan_US915::DecodeBeacon(const uint8_t* payload, size_t size, BeaconData_t& data) {
+uint8_t ChannelPlan_CN470::DecodeBeacon(const uint8_t* payload, size_t size, BeaconData_t& data) {
     uint16_t crc1, crc1_rx, crc2, crc2_rx;
     const BCNPayload* beacon = (const BCNPayload*)payload;
 
@@ -1014,26 +861,26 @@ uint8_t ChannelPlan_US915::DecodeBeacon(const uint8_t* payload, size_t size, Bea
     return LORA_OK;
 }
 
-void ChannelPlan_US915::FrequencyHop(uint32_t time, uint32_t period, uint32_t devAddr) {
+void ChannelPlan_CN470::FrequencyHop(uint32_t time, uint32_t period, uint32_t devAddr) {
     uint32_t channel;
     uint32_t freq;
 
     if (GetSettings()->Session.BeaconFreqHop) {
-        channel = (time / period) % US915_BEACON_CHANNELS;
-        freq = US915_BEACON_FREQ_BASE + (channel * US915_BEACON_FREQ_STEP);
+        channel = (time / period) % CN470_BEACON_CHANNELS;
+        freq = CN470_BEACON_FREQ_BASE + (channel * CN470_BEACON_FREQ_STEP);
         GetSettings()->Session.BeaconFrequency = freq;
     }
 
     if (GetSettings()->Session.PingSlotFreqHop) {
-        channel = (time / period + devAddr) % US915_BEACON_CHANNELS;
-        freq = US915_BEACON_FREQ_BASE + (channel * US915_BEACON_FREQ_STEP);
+        channel = (time / period + devAddr) % CN470_BEACON_CHANNELS;
+        freq = CN470_BEACON_FREQ_BASE + (channel * CN470_BEACON_FREQ_STEP);
         GetSettings()->Session.PingSlotFrequency = freq;
     }
 
     for (int i = 0; i < lora::MAX_MULTICAST_SESSIONS; ++i) {
         if (GetSettings()->Multicast[i].Address != 0) {
-            channel = (time / period + GetSettings()->Multicast[i].Address) % US915_BEACON_CHANNELS;
-            freq = US915_BEACON_FREQ_BASE + (channel * US915_BEACON_FREQ_STEP);
+            channel = (time / period + GetSettings()->Multicast[i].Address) % CN470_BEACON_CHANNELS;
+            freq = CN470_BEACON_FREQ_BASE + (channel * CN470_BEACON_FREQ_STEP);
             GetSettings()->Multicast[i].Frequency = freq;
         }
     }

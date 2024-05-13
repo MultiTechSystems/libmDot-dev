@@ -87,6 +87,10 @@ void ChannelPlan_AU915::Init() {
     _freqUStep500k = AU915_500K_FREQ_STEP;
     _freqDBase500k = AU915_500K_DBASE;
     _freqDStep500k = AU915_500K_DSTEP;
+
+    _defaultRx2Frequency = AU915_500K_DBASE;
+    _defaultRx2Datarate = DR_8;
+
     GetSettings()->Session.Rx2Frequency = AU915_500K_DBASE;
 
     _beaconSize = sizeof(BCNPayload);
@@ -98,7 +102,7 @@ void ChannelPlan_AU915::Init() {
     GetSettings()->Session.PingSlotFreqHop = true;
     GetSettings()->Session.Max_EIRP = 30;
 
-    _minDatarate = lora::DR_2;
+    _minDatarate = lora::DR_0;
     _maxDatarate = AU915_MAX_DATARATE;
     _minRx2Datarate = DR_8;
     _maxRx2Datarate = DR_13;
@@ -171,7 +175,7 @@ uint8_t ChannelPlan_AU915::HandleJoinAccept(const uint8_t* buffer, uint8_t size)
         for (int i = 13; i < size - 5; i += 2) {
             SetChannelMask((i-13)/2, buffer[i+1] << 8 | buffer[i]);
         }
-        
+
         if (GetSettings()->Session.TxDatarate == GetMaxDatarate() && GetChannelMask()[4] == 0x0) {
             GetSettings()->Session.TxDatarate = GetMaxDatarate() - 1;
         }
@@ -212,8 +216,12 @@ uint8_t ChannelPlan_AU915::GetMinDatarate() {
 #else
         return 8;
 #endif
-    else
-        return _minDatarate;
+    else {
+        if (GetSettings()->Session.UplinkDwelltime == 1)
+            return lora::DR_2;
+        else
+            return _minDatarate;
+    }
 }
 
 uint8_t ChannelPlan_AU915::GetMaxDatarate() {
@@ -327,7 +335,7 @@ Channel ChannelPlan_AU915::GetChannel(int8_t index) {
     } else {
         if (index < 64) {
             chan.Index = index;
-            chan.DrRange.Fields.Min = _minDatarate;
+            chan.DrRange.Fields.Min = GetMinDatarate();
             chan.DrRange.Fields.Max = _maxDatarate - 1;
             chan.Frequency = _freqUBase125k + (_freqUStep125k * index);
         } else if (index < 72) {
@@ -993,13 +1001,10 @@ uint8_t ChannelPlan_AU915::HandleMacCommand(uint8_t* payload, uint8_t& index) {
         case SRV_MAC_TX_PARAM_SETUP_REQ: {
             uint8_t eirp_dwell = payload[index++];
 
-            GetSettings()->Session.DownlinkDwelltime = eirp_dwell >> 5 & 0x01;
-            GetSettings()->Session.UplinkDwelltime = eirp_dwell >> 4 & 0x01;
+            GetSettings()->Session.DownlinkDwelltime = (eirp_dwell >> 5) & 0x01;
+            GetSettings()->Session.UplinkDwelltime = (eirp_dwell >> 4) & 0x01;
             //change data rate with if dwell time changes
-            if(GetSettings()->Session.UplinkDwelltime == 0) {
-                _minDatarate = lora::DR_0;
-            } else {
-                _minDatarate = lora::DR_2;
+            if(GetSettings()->Session.UplinkDwelltime == 1) {
                 if(GetSettings()->Session.TxDatarate < lora::DR_2) {
                     GetSettings()->Session.TxDatarate = lora::DR_2;
                     logDebug("Datarate is now DR%d",GetSettings()->Session.TxDatarate);
@@ -1009,7 +1014,9 @@ uint8_t ChannelPlan_AU915::HandleMacCommand(uint8_t* payload, uint8_t& index) {
             GetSettings()->Session.Max_EIRP = MAX_ERP_VALUES[(eirp_dwell & 0x0F)];
             logDebug("buffer index %d", GetSettings()->Session.CommandBufferIndex);
 
-            GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
+            if (GetSettings()->Session.TxPower > GetSettings()->Session.Max_EIRP) {
+                GetSettings()->Session.TxPower = GetSettings()->Session.Max_EIRP;
+            }
 
             if (GetSettings()->Session.CommandBufferIndex < std::min<int>(GetMaxPayloadSize(), COMMANDS_BUFFER_SIZE)) {
                 logDebug("Add tx param setup mac cmd to buffer");
