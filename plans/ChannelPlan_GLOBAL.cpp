@@ -1376,8 +1376,6 @@ Channel ChannelPlan_GLOBAL::GetChannel(int8_t index) {
 
 uint8_t ChannelPlan_GLOBAL::SetFrequencySubBand(uint8_t sub_band) {
 
-    logDebug("*** SET FSB %d ***", sub_band);
-
     if (IsPlanFixed()) {
         _txFrequencySubBand = sub_band;
 
