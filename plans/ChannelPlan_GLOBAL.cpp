@@ -24,7 +24,7 @@ const uint8_t ChannelPlan_GLOBAL::US915_TX_POWERS[] = { 30, 28, 26, 24, 22, 20, 
 const uint8_t ChannelPlan_GLOBAL::US915_MAX_PAYLOAD_SIZE[] =          { 11, 53, 125, 242, 242, 0, 0, 0, 53, 129, 242, 242, 242, 242, 0, 0 };
 const uint8_t ChannelPlan_GLOBAL::US915_MAX_PAYLOAD_SIZE_REPEATER[] = { 11, 53, 125, 222, 222, 0, 0, 0, 33, 109, 222, 222, 222, 222, 0, 0 };
 
-const uint8_t ChannelPlan_GLOBAL::RU864_TX_POWERS[] = { 16, 14, 12, 9, 8, 6, 4, 2 };
+const uint8_t ChannelPlan_GLOBAL::RU864_TX_POWERS[] = { 16, 14, 12, 10, 8, 6, 4, 2 };
 const uint8_t ChannelPlan_GLOBAL::RU864_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_GLOBAL::RU864_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -32,15 +32,15 @@ const uint8_t ChannelPlan_GLOBAL::KR920_TX_POWERS[] = { 14, 12, 10, 8, 6, 4, 2, 
 const uint8_t ChannelPlan_GLOBAL::KR920_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_GLOBAL::KR920_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-const uint8_t ChannelPlan_GLOBAL::IN865_TX_POWERS[] = { 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 9 };
+const uint8_t ChannelPlan_GLOBAL::IN865_TX_POWERS[] = { 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10 };
 const uint8_t ChannelPlan_GLOBAL::IN865_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_GLOBAL::IN865_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-const uint8_t ChannelPlan_GLOBAL::EU868_TX_POWERS[] = { 16, 14, 12, 9, 8, 6, 4, 2 };
+const uint8_t ChannelPlan_GLOBAL::EU868_TX_POWERS[] = { 16, 14, 12, 10, 8, 6, 4, 2 };
 const uint8_t ChannelPlan_GLOBAL::EU868_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_GLOBAL::EU868_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-const uint8_t ChannelPlan_GLOBAL::AU915_TX_POWERS[] = { 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2 };
+const uint8_t ChannelPlan_GLOBAL::AU915_TX_POWERS[] = { 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10 };
 const uint8_t ChannelPlan_GLOBAL::AU915_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 242, 0, 53, 129, 242, 242, 242, 242, 0, 0 };
 const uint8_t ChannelPlan_GLOBAL::AU915_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 222, 0, 33, 109, 222, 222, 222, 222, 0, 0 };
 const uint8_t ChannelPlan_GLOBAL::AU915_MAX_PAYLOAD_SIZE_400[] = { 0, 0, 11, 53, 125, 242, 242, 0, 53, 129, 242, 242, 242, 242, 0, 0 };
@@ -105,12 +105,6 @@ void ChannelPlan_GLOBAL::Init() {
         case lora::ChannelPlan::AS923_JAPAN2:
             Init_AS923();
             break;
-#if defined(TARGET_MAX32660)
-        case lora::ChannelPlan::KR920:
-            Init_KR920();
-            break;
-#endif
-
 #if defined(TARGET_MTS_MDOT_F411RE) || defined(TARGET_XDOT_MAX32670)
         case lora::ChannelPlan::KR920:
             Init_KR920();
@@ -169,9 +163,6 @@ void ChannelPlan_GLOBAL::Init_EU868() {
     _numChans500k = 0;
 
     _numDefaultChans = EU868_DEFAULT_NUM_CHANS;
-
-    _defaultRx2Frequency = EU868_RX2_FREQ;
-    _defaultRx2Datarate = DR_0;
 
     GetSettings()->Session.Rx2Frequency = EU868_RX2_FREQ;
     GetSettings()->Session.Rx2DatarateIndex = DR_0;
@@ -344,10 +335,6 @@ void ChannelPlan_GLOBAL::Init_US915() {
     _freqUStep500k = US915_500K_FREQ_STEP;
     _freqDBase500k = US915_500K_DBASE;
     _freqDStep500k = US915_500K_DSTEP;
-
-    _defaultRx2Frequency = US915_500K_DBASE;
-    _defaultRx2Datarate = DR_8;
-
     GetSettings()->Session.Rx2Frequency = US915_500K_DBASE;
 
     GetSettings()->Session.BeaconFrequency = US915_BEACON_FREQ_BASE;
@@ -423,7 +410,7 @@ void ChannelPlan_GLOBAL::Init_US915() {
 }
 
 void ChannelPlan_GLOBAL::Init_AU915() {
-    _plan = AU915;
+_plan = AU915;
     _planName = "AU915";
 
     _datarates.clear();
@@ -456,10 +443,6 @@ void ChannelPlan_GLOBAL::Init_AU915() {
     _freqUStep500k = AU915_500K_FREQ_STEP;
     _freqDBase500k = AU915_500K_DBASE;
     _freqDStep500k = AU915_500K_DSTEP;
-
-    _defaultRx2Frequency = AU915_500K_DBASE;
-    _defaultRx2Datarate = DR_8;
-
     GetSettings()->Session.Rx2Frequency = AU915_500K_DBASE;
 
     _beaconSize = sizeof(BCNPayload_AU915);
@@ -471,7 +454,7 @@ void ChannelPlan_GLOBAL::Init_AU915() {
     GetSettings()->Session.PingSlotFreqHop = true;
     GetSettings()->Session.Max_EIRP = 30;
 
-    _minDatarate = lora::DR_0;
+    _minDatarate = lora::DR_2;
     _maxDatarate = AU915_MAX_DATARATE;
     _minRx2Datarate = DR_8;
     _maxRx2Datarate = DR_13;
@@ -691,9 +674,6 @@ void ChannelPlan_GLOBAL::Init_AS923() {
     }
 
 
-    _defaultRx2Frequency = AS923_RX2_FREQ + _as923_freq_offset;
-    _defaultRx2Datarate = DR_2;
-
     GetSettings()->Session.Rx2Frequency = AS923_RX2_FREQ + _as923_freq_offset;
     GetSettings()->Session.Rx2DatarateIndex = DR_2;
 
@@ -798,7 +778,7 @@ void ChannelPlan_GLOBAL::DefaultLBT() {
 
 
 void ChannelPlan_GLOBAL::Init_KR920() {
-#if defined(TARGET_MTS_MDOT_F411RE) || defined(TARGET_XDOT_MAX32670) || defined(TARGET_MAX32660)
+#if defined(TARGET_MTS_MDOT_F411RE) || defined(TARGET_XDOT_MAX32670)
     _datarates.clear();
     _channels.clear();
     _dutyBands.clear();
@@ -836,9 +816,6 @@ void ChannelPlan_GLOBAL::Init_KR920() {
     _numChans125k = 16;
     _numChans500k = 0;
     _numDefaultChans = KR920_DEFAULT_NUM_CHANS;
-
-    _defaultRx2Frequency = 921900000;
-    _defaultRx2Datarate = DR_0;
 
     GetSettings()->Session.Rx2Frequency = 921900000;
     GetSettings()->Session.Rx2DatarateIndex = DR_0;
@@ -958,9 +935,6 @@ void ChannelPlan_GLOBAL::Init_IN865() {
     _numChans125k = 16;
     _numChans500k = 0;
     _numDefaultChans = IN865_DEFAULT_NUM_CHANS;
-
-    _defaultRx2Frequency = 866550000;
-    _defaultRx2Datarate = DR_2;
 
     GetSettings()->Session.Rx2Frequency = 866550000;
     GetSettings()->Session.Rx2DatarateIndex = DR_2;
@@ -1097,9 +1071,6 @@ void ChannelPlan_GLOBAL::Init_RU864() {
     _numChans125k = RU864_125K_NUM_CHANS;
     _numChans500k = 0;
     _numDefaultChans = RU864_DEFAULT_NUM_CHANS;
-
-    _defaultRx2Frequency = RU864_RX2_FREQ;
-    _defaultRx2Datarate = DR_0;
 
     GetSettings()->Session.Rx2Frequency = RU864_RX2_FREQ;
     GetSettings()->Session.Rx2DatarateIndex = DR_0;
@@ -1265,12 +1236,10 @@ uint8_t ChannelPlan_GLOBAL::GetMinDatarate() {
         return 8;
 #endif
     else {
-        uint8_t ret = _minDatarate;
-        if (_plan == AU915 || IsPlanAS923()) {
-            if (GetSettings()->Session.UplinkDwelltime == 1)
-                ret = lora::DR_2;
-        }
-        return ret;
+        if (GetSettings()->Session.UplinkDwelltime == 1)
+            return lora::DR_2;
+        else
+            return _minDatarate;
     }
 }
 
@@ -1335,8 +1304,8 @@ uint8_t ChannelPlan_GLOBAL::SetTxConfig() {
         }
     }
 
-    logInfo("Session pwr: %d ant: %d max: %d", GetSettings()->Session.TxPower, GetSettings()->Network.AntennaGain, max_pwr);
-    logInfo("Radio Power index: %d output: %d total: %d", pwr, RADIO_POWERS[pwr], RADIO_POWERS[pwr] + GetSettings()->Network.AntennaGain);
+    logDebug("Session pwr: %d ant: %d max: %d", GetSettings()->Session.TxPower, GetSettings()->Network.AntennaGain, max_pwr);
+    logDebug("Radio Power index: %d output: %d total: %d", pwr, RADIO_POWERS[pwr], RADIO_POWERS[pwr] + GetSettings()->Network.AntennaGain);
 
     uint32_t bw = txDr.Bandwidth;
     uint32_t sf = txDr.SpreadingFactor;
@@ -1358,7 +1327,7 @@ uint8_t ChannelPlan_GLOBAL::SetTxConfig() {
 
     GetRadio()->SetTxConfig(modem, pwr, fdev, bw, sf, cr, pl, false, crc, false, 0, iq, 3e3);
 
-    logInfo("TX PWR: %u DR: %u SF: %u BW: %u CR: %u PL: %u CRC: %d IQ: %d", pwr, txDr.Index, sf, bw, cr, pl, crc, iq);
+    logDebug("TX PWR: %u DR: %u SF: %u BW: %u CR: %u PL: %u CRC: %d IQ: %d", pwr, txDr.Index, sf, bw, cr, pl, crc, iq);
 
     return LORA_OK;
 }
@@ -1388,7 +1357,7 @@ Channel ChannelPlan_GLOBAL::GetChannel(int8_t index) {
         } else {
             if (index < 64) {
                 chan.Index = index;
-                chan.DrRange.Fields.Min = GetMinDatarate();
+                chan.DrRange.Fields.Min = _minDatarate;
                 chan.DrRange.Fields.Max = _maxDatarate - 1;
                 chan.Frequency = _freqUBase125k + (_freqUStep125k * index);
             } else if (index < 72) {
@@ -1406,6 +1375,8 @@ Channel ChannelPlan_GLOBAL::GetChannel(int8_t index) {
 }
 
 uint8_t ChannelPlan_GLOBAL::SetFrequencySubBand(uint8_t sub_band) {
+
+    logDebug("*** SET FSB %d ***", sub_band);
 
     if (IsPlanFixed()) {
         _txFrequencySubBand = sub_band;
@@ -1517,12 +1488,7 @@ RxWindow ChannelPlan_GLOBAL::GetRxWindow(uint8_t window, int8_t id) {
                         index = 0;
                     }
                 } else {
-                    if (_plan == IN865 && GetSettings()->Session.Rx1DatarateOffset >= 6) {
-                        index =  GetSettings()->Session.TxDatarate + (GetSettings()->Session.Rx1DatarateOffset == 6 ? 1 : 2);
-                        if (index == DR_6)
-                            index = DR_5;
-                        index = std::min<int>(index, _maxDatarate);
-                    } else if (GetSettings()->Session.TxDatarate > GetSettings()->Session.Rx1DatarateOffset) {
+                    if (GetSettings()->Session.TxDatarate > GetSettings()->Session.Rx1DatarateOffset) {
                         index = GetSettings()->Session.TxDatarate - GetSettings()->Session.Rx1DatarateOffset;
                     } else {
                         index = 0;
@@ -1602,9 +1568,6 @@ uint8_t ChannelPlan_GLOBAL::HandleRxParamSetup(const uint8_t* payload, uint8_t i
     if (datarate < _minRx2Datarate || datarate > _maxRx2Datarate) {
         logInfo("DR KO");
         status &= 0xFD; // Datarate KO
-    } else if (_plan == IN865 && datarate == DR_6) {
-        logInfo("DR KO");
-        status &= 0xFD; // Datarate KO
     }
 
     if (drOffset < 0 || drOffset > _maxDatarateOffset) {
@@ -1614,12 +1577,7 @@ uint8_t ChannelPlan_GLOBAL::HandleRxParamSetup(const uint8_t* payload, uint8_t i
 
 #if !defined(ENABLE_LORAWAN_OPTIONAL_DATARATES)
     // LCTT expects this Rx1Offset 6 & 7 to be rejected if TxDR is DR5 or greater
-    if (IsPlanAS923() && drOffset >= 6 && ((GetSettings()->Session.TxDatarate + ((drOffset == 6) ? 1 : 2)) > DR_5)) {
-        logInfo("DR Offset KO");
-        status &= 0xFB; // Rx1DrOffset range KO
-    }
-
-    if (_plan == IN865 && drOffset == 7 && (GetSettings()->Session.TxDatarate == DR_5)) {
+    if (IsPlanAS923() && drOffset >= 6 && ( (GetSettings()->Session.TxDatarate + ((drOffset == 6) ? 1 : 2)) > DR_5)) {
         logInfo("DR Offset KO");
         status &= 0xFB; // Rx1DrOffset range KO
     }
@@ -2454,11 +2412,13 @@ uint8_t ChannelPlan_GLOBAL::HandleMacCommand(uint8_t* payload, uint8_t& index) {
             case SRV_MAC_TX_PARAM_SETUP_REQ: {
                 uint8_t eirp_dwell = payload[index++];
 
-                GetSettings()->Session.DownlinkDwelltime = (eirp_dwell >> 5) & 0x01;
-                GetSettings()->Session.UplinkDwelltime = (eirp_dwell >> 4) & 0x01;
-                logInfo("HANDLE MAC DWELL UP: %d DN: %d", GetSettings()->Session.UplinkDwelltime, GetSettings()->Session.DownlinkDwelltime);
+                GetSettings()->Session.DownlinkDwelltime = eirp_dwell >> 5 & 0x01;
+                GetSettings()->Session.UplinkDwelltime = eirp_dwell >> 4 & 0x01;
                 //change data rate with if dwell time changes
-                if(GetSettings()->Session.UplinkDwelltime == 1) {
+                if(GetSettings()->Session.UplinkDwelltime == 0) {
+                    _minDatarate = lora::DR_0;
+                } else {
+                    _minDatarate = lora::DR_2;
                     if(GetSettings()->Session.TxDatarate < lora::DR_2) {
                         GetSettings()->Session.TxDatarate = lora::DR_2;
                         logDebug("Datarate is now DR%d",GetSettings()->Session.TxDatarate);
@@ -2493,7 +2453,7 @@ uint8_t ChannelPlan_GLOBAL::HandleMacCommand(uint8_t* payload, uint8_t& index) {
 }
 
 uint8_t ChannelPlan_GLOBAL::GetMaxPayloadSize(uint8_t dr, Direction dir) {
-    if ((_plan == AU915 || IsPlanAS923()) && GetSettings()->Session.UplinkDwelltime == 1 && dir == DIR_UP) {
+    if (GetSettings()->Session.UplinkDwelltime == 1 && dir == DIR_UP) {
         if (_plan == AU915) {
             if (GetSettings()->Network.RepeaterMode)
                 return AU915_MAX_PAYLOAD_SIZE_REPEATER_400[dr];
@@ -2517,7 +2477,13 @@ uint8_t ChannelPlan_GLOBAL::GetMaxPayloadSize(uint8_t dr, Direction dir) {
 
 
 void ChannelPlan_GLOBAL::DecrementDatarate() {
-    if (GetSettings()->Session.TxDatarate > GetMinDatarate()) {
+    if(GetSettings()->Session.UplinkDwelltime == 0) {
+        _minDatarate = lora::DR_0;
+    } else {
+        _minDatarate = lora::DR_2;
+    }
+
+    if (GetSettings()->Session.TxDatarate > _minDatarate) {
         GetSettings()->Session.TxDatarate--;
     }
 }

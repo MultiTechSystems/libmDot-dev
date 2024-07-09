@@ -90,9 +90,6 @@ void ChannelPlan_KR920::Init() {
     _numChans500k = 0;
     _numDefaultChans = KR920_DEFAULT_NUM_CHANS;
 
-    _defaultRx2Frequency = 921900000;
-    _defaultRx2Datarate = DR_0;
-
     GetSettings()->Session.Rx2Frequency = 921900000;
     GetSettings()->Session.Rx2DatarateIndex = DR_0;
 
@@ -239,8 +236,8 @@ uint8_t ChannelPlan_KR920::SetTxConfig() {
         }
     }
 
-    logInfo("Session pwr: %d ant: %d max: %d", GetSettings()->Session.TxPower, GetSettings()->Network.AntennaGain, max_pwr);
-    logInfo("Radio Power index: %d output: %d total: %d", pwr, RADIO_POWERS[pwr], RADIO_POWERS[pwr] + GetSettings()->Network.AntennaGain);
+    logDebug("Session pwr: %d ant: %d max: %d", GetSettings()->Session.TxPower, GetSettings()->Network.AntennaGain, max_pwr);
+    logDebug("Radio Power index: %d output: %d total: %d", pwr, RADIO_POWERS[pwr], RADIO_POWERS[pwr] + GetSettings()->Network.AntennaGain);
 
     uint32_t bw = txDr.Bandwidth;
     uint32_t sf = txDr.SpreadingFactor;
@@ -262,7 +259,7 @@ uint8_t ChannelPlan_KR920::SetTxConfig() {
 
     GetRadio()->SetTxConfig(modem, pwr, fdev, bw, sf, cr, pl, false, crc, false, 0, iq, 3e3);
 
-    logInfo("TX PWR: %u DR: %u SF: %u BW: %u CR: %u PL: %u CRC: %d IQ: %d", pwr, txDr.Index, sf, bw, cr, pl, crc, iq);
+    logDebug("TX PWR: %u DR: %u SF: %u BW: %u CR: %u PL: %u CRC: %d IQ: %d", pwr, txDr.Index, sf, bw, cr, pl, crc, iq);
 
     return LORA_OK;
 }

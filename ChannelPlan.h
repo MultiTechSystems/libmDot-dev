@@ -286,18 +286,6 @@ namespace lora {
             virtual uint8_t SetRx2DatarateIndex(uint8_t index);
 
             /**
-             * Get the default frequency for second receive window
-             * @return frequency
-             */
-            virtual uint32_t GetRx2DefaultFrequency();
-
-            /**
-             * Get the default datarate index used for second receive window
-             * @return index
-             */
-            virtual uint8_t GetRx2DefaultDatarateIndex();
-
-            /**
              * Get next channel and set the SxRadio tx config with current settings
              * @return LORA_OK
              */
@@ -658,6 +646,8 @@ namespace lora {
             SxRadio* GetRadio();                //!< Get pointer to the SxRadio object or assert if it is null
             Settings* GetSettings();            //!< Get pointer to the settings object or assert if it is null
             RandomChannel *GetRandomChannel();
+
+            virtual bool IsGlobalPlan() { return false; }
         protected:
 
             /**
@@ -686,9 +676,6 @@ namespace lora {
             uint8_t _minDatarate;               //!< Minimum datarate to accept in ADR request
             uint8_t _maxDatarate;               //!< Maximum datarate to accept in ADR request
 
-
-            uint32_t _defaultRx2Frequency;      //!< Default frequency for Rx2
-            uint8_t _defaultRx2Datarate;        //!< Default datarate for Rx2
             uint8_t _minRx2Datarate;            //!< Minimum datarate to accept in for Rx2
             uint8_t _maxRx2Datarate;            //!< Maximum datarate to accept in for Rx2
             uint8_t _minDatarateOffset;         //!< Minimum datarate offset to accept

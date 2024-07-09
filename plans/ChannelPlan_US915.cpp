@@ -83,10 +83,6 @@ void ChannelPlan_US915::Init() {
     _freqUStep500k = US915_500K_FREQ_STEP;
     _freqDBase500k = US915_500K_DBASE;
     _freqDStep500k = US915_500K_DSTEP;
-
-    _defaultRx2Frequency = US915_500K_DBASE;
-    _defaultRx2Datarate = DR_8;
-
     GetSettings()->Session.Rx2Frequency = US915_500K_DBASE;
 
     GetSettings()->Session.BeaconFrequency = US915_BEACON_FREQ_BASE;
@@ -170,6 +166,7 @@ uint8_t ChannelPlan_US915::HandleJoinAccept(const uint8_t* buffer, uint8_t size)
             GetSettings()->Session.TxDatarate = GetMaxDatarate() - 1;
         }
     } else {
+
         uint8_t fsb = 0;
 
         if (_txChannel < 64)
@@ -284,8 +281,8 @@ uint8_t ChannelPlan_US915::SetTxConfig() {
         }
     }
 
-    logInfo("Session pwr: %d ant: %d max: %d", GetSettings()->Session.TxPower, GetSettings()->Network.AntennaGain, max_pwr);
-    logInfo("Radio Power index: %d output: %d total: %d", pwr, RADIO_POWERS[pwr], RADIO_POWERS[pwr] + GetSettings()->Network.AntennaGain);
+    logDebug("Session pwr: %d ant: %d max: %d", GetSettings()->Session.TxPower, GetSettings()->Network.AntennaGain, max_pwr);
+    logDebug("Radio Power index: %d output: %d total: %d", pwr, RADIO_POWERS[pwr], RADIO_POWERS[pwr] + GetSettings()->Network.AntennaGain);
 
     uint32_t bw = txDr.Bandwidth;
     uint32_t sf = txDr.SpreadingFactor;
@@ -307,7 +304,7 @@ uint8_t ChannelPlan_US915::SetTxConfig() {
 
     GetRadio()->SetTxConfig(modem, pwr, fdev, bw, sf, cr, pl, false, crc, false, 0, iq, 3e3);
 
-    logInfo("TX PWR: %u DR: %u SF: %u BW: %u CR: %u PL: %u CRC: %d IQ: %d", pwr, txDr.Index, sf, bw, cr, pl, crc, iq);
+    logDebug("TX PWR: %u DR: %u SF: %u BW: %u CR: %u PL: %u CRC: %d IQ: %d", pwr, txDr.Index, sf, bw, cr, pl, crc, iq);
 
     return LORA_OK;
 }
@@ -939,6 +936,7 @@ uint8_t ChannelPlan_US915::GetNextChannel()
 
 uint8_t lora::ChannelPlan_US915::GetJoinDatarate() {
     uint8_t dr = GetSettings()->Session.TxDatarate;
+
     uint8_t fsb = 1;
     uint8_t dr4_fsb = 1;
     bool altdr = false;
@@ -975,6 +973,7 @@ uint8_t lora::ChannelPlan_US915::GetJoinDatarate() {
         }
         altdr = !altdr;
     }
+    
 
     return dr;
 }

@@ -20,8 +20,8 @@
 #include "mDot.h"
 #include "mbed.h"
 #include "ApplicationLayerPackage.h"
-//#define GPS_EPOCH 315964800U
 const uint32_t GPS_EPOCH = 315964800 - 18;  // Subtract leap seconds
+#define MULTICAST_SESSIONS 3
 
 
 class MulticastGroup : public ApplicationLayerPackage {
@@ -41,6 +41,7 @@ class MulticastGroup : public ApplicationLayerPackage {
         bool switchClassIfPending();
         void switchClass();
         bool isClassSwitchActive() const;
+        void updatePacketTimeToStart(ApplicationMessage& resp);
     private:
         enum MulticastCommands {
             PACKAGE_VERSION,
@@ -62,11 +63,12 @@ class MulticastGroup : public ApplicationLayerPackage {
             uint32_t addr;
             uint32_t max_frame_count;
             us_timestamp_t timetostart;
+            int32_t class_c_end;
+            int32_t class_c_start;
             char dev_class;
             time_t time_setup;
             int8_t periodicity;
         } mcgroup;
-
 
         bool* _filled;
         uint8_t _groupId;
@@ -89,11 +91,7 @@ class MulticastGroup : public ApplicationLayerPackage {
             mcgroup* group;
             bool active;
             bool pending;
-            #if defined(TARGET_MAX32660EVSYS) || defined(TARGET_MAX32630FTHR)
-                Timeout timer;
-            #else
-                LowPowerTimeout timer;
-            #endif
+            LowPowerTimeout timer;
         } _class_switch;
 
         void setupClassB(uint8_t id);

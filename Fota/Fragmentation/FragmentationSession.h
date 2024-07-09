@@ -25,7 +25,7 @@
 #include "mDot.h"
 #include "WriteFile.h"
 
-
+#define MULTICAST_SESSIONS 3
 
 class FragmentationSession : public ApplicationLayerPackage {
 

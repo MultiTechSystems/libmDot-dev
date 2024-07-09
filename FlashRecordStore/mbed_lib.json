@@ -49,15 +49,8 @@
             "ext-flash-page-size": 256,
             "ext-flash-sector-size": 65536,
             "ext-flash-erase-size": 65536
-        },
+        },            
         "XDOT_L151CC": {
-            "journal-enable": 0,
-            "file-enable": 1,
-            "ext-flash-page-size": 512,
-            "ext-flash-sector-size": 4096,
-            "ext-flash-erase-size": 4096
-        },
-        "XDOT_MAX32670": {
             "journal-enable": 0,
             "file-enable": 1,
             "ext-flash-page-size": 512,

@@ -21,7 +21,7 @@
 using namespace lora;
 
 // MWF - changed RU864_TX_POWERS to match final 1.0.2 regional spec
-const uint8_t ChannelPlan_RU864::RU864_TX_POWERS[] = { 16, 14, 12, 9, 8, 6, 4, 2 };
+const uint8_t ChannelPlan_RU864::RU864_TX_POWERS[] = { 16, 14, 12, 10, 8, 6, 4, 2 };
 const uint8_t ChannelPlan_RU864::RU864_MAX_PAYLOAD_SIZE[] = { 51, 51, 51, 115, 242, 242, 242, 242, 0, 0, 0, 0, 0, 0, 0, 0 };
 const uint8_t ChannelPlan_RU864::RU864_MAX_PAYLOAD_SIZE_REPEATER[] = { 51, 51, 51, 115, 222, 222, 222, 222, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -92,9 +92,6 @@ void ChannelPlan_RU864::Init() {
     _numChans125k = RU864_125K_NUM_CHANS;
     _numChans500k = 0;
     _numDefaultChans = RU864_DEFAULT_NUM_CHANS;
-
-    _defaultRx2Frequency = RU864_RX2_FREQ;
-    _defaultRx2Datarate = DR_0;
 
     GetSettings()->Session.Rx2Frequency = RU864_RX2_FREQ;
     GetSettings()->Session.Rx2DatarateIndex = DR_0;
@@ -259,8 +256,8 @@ uint8_t ChannelPlan_RU864::SetTxConfig() {
         }
     }
 
-    logInfo("Session pwr: %d ant: %d max: %d", GetSettings()->Session.TxPower, GetSettings()->Network.AntennaGain, max_pwr);
-    logInfo("Radio Power index: %d output: %d total: %d", pwr, RADIO_POWERS[pwr], RADIO_POWERS[pwr] + GetSettings()->Network.AntennaGain);
+    logDebug("Session pwr: %d ant: %d max: %d", GetSettings()->Session.TxPower, GetSettings()->Network.AntennaGain, max_pwr);
+    logDebug("Radio Power index: %d output: %d total: %d", pwr, RADIO_POWERS[pwr], RADIO_POWERS[pwr] + GetSettings()->Network.AntennaGain);
 
     uint32_t bw = txDr.Bandwidth;
     uint32_t sf = txDr.SpreadingFactor;
@@ -282,7 +279,7 @@ uint8_t ChannelPlan_RU864::SetTxConfig() {
 
     GetRadio()->SetTxConfig(modem, pwr, fdev, bw, sf, cr, pl, false, crc, false, 0, iq, 3e3);
 
-    logInfo("TX PWR: %u DR: %u SF: %u BW: %u CR: %u PL: %u CRC: %d IQ: %d", pwr, txDr.Index, sf, bw, cr, pl, crc, iq);
+    logDebug("TX PWR: %u DR: %u SF: %u BW: %u CR: %u PL: %u CRC: %d IQ: %d", pwr, txDr.Index, sf, bw, cr, pl, crc, iq);
 
     return LORA_OK;
 }

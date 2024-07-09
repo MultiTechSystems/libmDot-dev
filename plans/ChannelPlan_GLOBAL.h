@@ -263,6 +263,8 @@ namespace lora {
              */
             virtual void DefaultLBT();
 
+            virtual bool IsGlobalPlan() { return true; }
+
         protected:
 
             uint8_t _plan_id;
@@ -281,7 +283,7 @@ namespace lora {
                 uint8_t CRC2[2];
             } BCNPayload_US915;
 
-            static const uint8_t AU915_TX_POWERS[15];                   //!< List of available tx powers
+            static const uint8_t AU915_TX_POWERS[11];                   //!< List of available tx powers
             static const uint8_t AU915_MAX_PAYLOAD_SIZE[];              //!< List of max payload sizes for each datarate
             static const uint8_t AU915_MAX_PAYLOAD_SIZE_400[];          //!< List of max payload sizes for each datarate
             static const uint8_t AU915_MAX_PAYLOAD_SIZE_REPEATER[];     //!< List of repeater compatible max payload sizes for each datarate

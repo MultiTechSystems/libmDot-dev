@@ -24,6 +24,7 @@
 #include "MulticastGroup.h"
 #include "ApplicationLayerPackage.h"
 
+
 #define FOTA_MAGIC_VAL 0xF0DAF0DA
 #define FOTA_MAGIC_REG 31
 
@@ -49,14 +50,13 @@ class Fota {
         bool ready();
         int32_t timeToStart();
         bool getClockSynced();
-
         int32_t setClockOffset(uint32_t gps_time);
+
         int32_t getClockOffset();
         void restoreClockOffset(int32_t offset);
 
         void setClockUpdated(uint32_t utc_time);
         uint32_t getClockUpdated();
-
 
         bool isSendingCRC() {
         #ifdef FOTA
@@ -79,19 +79,19 @@ class Fota {
 
         bool _enabled;
         uint8_t _mode;
-        mDot* _dot;
         Thread _send_thread;
-        static Fota* _instance;
         uint8_t p[242];
+        static Fota* _instance;
+        mDot* _dot;
         bool _clk_synced = false;
         time_t _clk_updated;
         Mutex _clk_mutex;
 
 #ifdef FOTA
-        bool _got_file_will_reset = false;
         FragmentationSession* _frag_session;
 #endif
         MulticastGroup* _mc_group;
+
 
         struct {
             ApplicationMessage rx;
