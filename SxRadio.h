@@ -224,11 +224,17 @@ public:
     /*!
      * \brief Sets the radio in sleep mode
      */
-    virtual void Sleep( void ) = 0;
+    virtual void Sleep( bool warm_start = false ) = 0;
+
+    /*!
+     * \brief Wakeup the radio from sleep mode
+     */
+    virtual void Wakeup( bool warm_start = false ) = 0;
+
     /*!
      * \brief Sets the radio in standby mode
      */
-    virtual void Standby( void ) = 0;
+    virtual void Standby(bool use_rc = false ) = 0;
     /*!
      * \brief Sets the radio in reception mode for the given time
      * \param [IN] timeout Reception timeout [us]

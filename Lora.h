@@ -232,7 +232,8 @@ namespace lora {
         MAC_RX2,
         MAC_RXC,
         MAC_TX,
-        MAC_JOIN
+        MAC_JOIN,
+        MAC_ERROR
     };
 
     /**

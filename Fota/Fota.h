@@ -88,6 +88,7 @@ class Fota {
         Mutex _clk_mutex;
 
 #ifdef FOTA
+        bool _got_file_will_reset = false;
         FragmentationSession* _frag_session;
 #endif
         MulticastGroup* _mc_group;
