@@ -21,7 +21,7 @@
 #include "mbed.h"
 #include "ApplicationLayerPackage.h"
 const uint32_t GPS_EPOCH = 315964800 - 18;  // Subtract leap seconds
-#define MULTICAST_SESSIONS 3
+#define MC_MULTICAST_SESSIONS 4
 
 
 class MulticastGroup : public ApplicationLayerPackage {
@@ -42,6 +42,7 @@ class MulticastGroup : public ApplicationLayerPackage {
         void switchClass();
         bool isClassSwitchActive() const;
         void updatePacketTimeToStart(ApplicationMessage& resp);
+
     private:
         enum MulticastCommands {
             PACKAGE_VERSION,
@@ -63,8 +64,6 @@ class MulticastGroup : public ApplicationLayerPackage {
             uint32_t addr;
             uint32_t max_frame_count;
             us_timestamp_t timetostart;
-            int32_t class_c_end;
-            int32_t class_c_start;
             char dev_class;
             time_t time_setup;
             int8_t periodicity;
@@ -83,7 +82,7 @@ class MulticastGroup : public ApplicationLayerPackage {
 
         // Thread _event_thread;
         // EventQueue _switch_class_queue;
-        mcgroup _mcGroup[MULTICAST_SESSIONS];
+        mcgroup _mcGroup[MC_MULTICAST_SESSIONS];
         char _org_class;
         Mutex _class_switch_lock;
 

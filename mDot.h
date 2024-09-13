@@ -582,10 +582,16 @@ class mDot {
         int32_t setTempClass(std::string newClass);
 
         /**
-         * Get the device class A, B or C
+         * Get the device current operating class A, B or C
          *  @returns MDOT_OK if success
          */
         std::string getClass();
+
+        /**
+         * Get the device configured default class A, B or C
+         *  @returns MDOT_OK if success
+         */
+        std::string getConfigClass();
 
         /**
          * Get the max packet length with current settings
@@ -788,6 +794,7 @@ class mDot {
          * Up to 8 MULTICAST_SESSIONS
          */
         int32_t setMulticastDownlinkCounter(uint8_t index, uint32_t count);
+        int32_t setMulticastMaxDownlinkCounter(uint8_t index, uint32_t count);
         int32_t setMulticastPeriodicity(uint8_t index, int8_t period);
         int32_t setMulticastFrequency(uint8_t index, uint32_t freq);
         int32_t setMulticastDatarate(uint8_t index, uint8_t dr);
@@ -800,6 +807,7 @@ class mDot {
         int32_t getMulticastNetworkSessionKey(uint8_t index, uint8_t* nsk);
         int32_t getMulticastApplicationSessionKey(uint8_t index, uint8_t* ask);
         uint32_t getMulticastDownlinkCounter(uint8_t index);
+        uint32_t getMulticastMaxDownlinkCounter(uint8_t index);
         int8_t getMulticastPeriodicity(uint8_t index);
         uint32_t getMulticastFrequency(uint8_t index);
         uint8_t getMulticastDatarate(uint8_t index);
@@ -1909,7 +1917,7 @@ class mDot {
         bool validateDataRate(const uint8_t& dr);
         bool validateRx2DataRate(const uint8_t& dr);
 
-        void mcGroupKeys(uint8_t *mcKeyEncrypt, uint32_t addr, uint8_t groupId, uint32_t frame_count);
+        void mcGroupKeys(uint8_t *mcKeyEncrypt, uint32_t addr, uint8_t groupId, uint32_t min_frame_count, uint32_t max_frame_count);
 
 #if defined(FOTA) && FLASH_RECORD_STORE_FILE_ENABLE
         mts::FlashFileRecord* getFotaFileRecord();
