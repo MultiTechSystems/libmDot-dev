@@ -437,8 +437,18 @@ RxWindow ChannelPlan_US915::GetRxWindow(uint8_t window, int8_t id) {
                 index = GetSettings()->Session.PingSlotDatarateIndex;
             }
             break;
+            
+        case RXC:
+            if (id > 0 && id <= MAX_MULTICAST_SESSIONS) {
+                if (GetSettings()->Multicast[id - 1].Active) {
+                    rxw.Frequency = GetSettings()->Multicast[id - 1].Frequency;
+                    index = GetSettings()->Multicast[id - 1].DatarateIndex;
+                    break;
+                }
+            }
+            // fall-through
 
-        // RX2, RXC, RX_TEST, etc..
+        // RX2,  RX_TEST, etc..
         default:
             if (GetSettings()->Network.Mode == lora::PRIVATE_MTS) {
                 if (_txChannel < _numChans125k) {
