@@ -75,6 +75,12 @@ namespace lora {
             virtual Channel GetChannel(int8_t index);
 
             /**
+             * ACK timeout in milliseconds
+             * @return millisecond timeout for RX2 datarate max payload size
+             */
+            virtual uint32_t GetAckTimeout();
+
+            /**
              * Get rx window settings for requested window
              * RX_1, RX_2, RX_BEACON, RX_SLOT
              * @param window

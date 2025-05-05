@@ -325,6 +325,12 @@ namespace lora {
             virtual void FhssChangeChannel(uint8_t currentChannel);
 
             /**
+             * ACK timeout in milliseconds
+             * @return millisecond timeout for RX2 datarate max payload size
+             */
+            virtual uint32_t GetAckTimeout();
+
+            /**
              * Callback for ACK timeout event
              * @return LORA_OK
              */

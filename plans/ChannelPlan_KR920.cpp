@@ -356,6 +356,17 @@ RxWindow ChannelPlan_KR920::GetRxWindow(uint8_t window, int8_t id) {
     return rxw;
 }
 
+uint32_t ChannelPlan_KR920::GetAckTimeout() {
+    if (GetSettings()->Session.Rx2DatarateIndex == DR_0) {
+        return 2000;
+    } else if (GetSettings()->Session.Rx2DatarateIndex == DR_1) {
+        return 1000;
+    } else if (GetSettings()->Session.Rx2DatarateIndex == DR_2) {
+        return 500;
+    }
+    return 0;
+}
+
 uint8_t ChannelPlan_KR920::HandleRxParamSetup(const uint8_t* payload, uint8_t index, uint8_t size, uint8_t& status) {
     status = 0x07;
     int8_t datarate = 0;
